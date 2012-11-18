@@ -23,7 +23,7 @@ class PSO_Connection {
 	}
 	
 	public function sendBuffer() {
-		if(!$this->outputBuffer)
+		if($this->outputBuffer === '')
 			return;
 		
 		if(strlen($this->outputBuffer) > self::$chunk_size) {

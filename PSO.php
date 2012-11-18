@@ -6,8 +6,8 @@ function __autoload($class) {
 }
 
 abstract class PSO {
-	protected static $select_timeout_s = 1;
-	protected static $select_timeout_us = 0;
+	protected static $next_poll = 0;
+	protected static $poll_interval = 1;
 	
 	public static function drain() {
 		$pools = func_get_args();
@@ -23,7 +23,12 @@ abstract class PSO {
 
 			if(!$read) return;
 			
-			if(stream_select($read, $write, $except, self::$select_timeout_s, self::$select_timeout_us)) {
+			$wait = self::$next_poll - microtime(true);
+			if($wait < 0) $wait = 0;
+			$wait_s = floor($wait);
+			$wait_us = floor(($wait - $wait_s) * 1000000);
+			
+			if(stream_select($read, $write, $except, $wait_s, $wait_us)) {
 				foreach($read as $fp) {
 					list($pool, $conn) = self::find_connection($fp, $pools);
 					
@@ -32,8 +37,18 @@ abstract class PSO {
 				
 				foreach($write as $fp) {
 					list($pool, $conn) = self::find_connection($fp, $pools);
+					
 					$pool->sendBuffer($conn);
 				}
+			}
+			
+			
+			if(self::$next_poll < microtime(true)) {
+				foreach($pools as $pool) {
+					$pool->raiseEvent('Tick');
+				}
+				
+				self::$next_poll = microtime(true) + self::$poll_interval;
 			}
 		}
 	}

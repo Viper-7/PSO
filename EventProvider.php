@@ -2,7 +2,7 @@
 trait EventProvider {
 	protected $events = array();
 	
-	public function raiseEvent($event, $args, $target=NULL, $context=NULL) {
+	public function raiseEvent($event, $args=array(), $target=NULL, $context=NULL) {
 		$event = 'on' . $event;
 		
 		if(!$context)
@@ -13,7 +13,7 @@ trait EventProvider {
 		
 		if(isset($this->events[$event])) {
 			foreach($this->events[$event] as $filter => $callback) {
-				if($target && !is_numeric($filter)) {
+				if(!$target && !is_int($filter)) {
 					if($filter != $target)
 						continue;
 				}
