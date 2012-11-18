@@ -9,13 +9,16 @@ $pool->onData(function($data) {
 
 
 $clientPool = new PSO_TCPClientPool();
+
 $clientPool->onData(function($data) {
 	var_dump($data);
 });
 
+$clientPool->onTick(function() { 
+	$this->broadcast(microtime(true));
+});
 
 $conn1 = $clientPool->addTarget('localhost', '8004');
-$conn1->send('test1');
 
 
 PSO::drain($pool, $clientPool);
