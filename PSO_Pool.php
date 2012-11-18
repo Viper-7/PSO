@@ -35,7 +35,6 @@ abstract class PSO_Pool {
 	public function addConnection($conn) {
 		$this->connections[] = $conn;
 		$conn->pool = $this;
-		stream_set_read_buffer($conn->stream, 4096);
 		$this->raiseEvent('Connect', $conn, NULL);
 	}
 	
