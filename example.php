@@ -18,5 +18,4 @@ $clientPool->onTick(function() {
 });
 
 
-
 PSO::drain($pool, $clientPool);
