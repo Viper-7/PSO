@@ -41,6 +41,16 @@ class PSO_Connection {
 	}
 	
 	public function disconnect() {
+		// If the connection is still active, drain the buffer before disconnecting
+		if(is_resource($this->stream) && $this->outputBuffer) {
+			$client = $this;
+			return $this->pool->onTick(function() use ($client) {
+				$client->disconnect();
+				return 'unregister';
+			});
+		}
+		
+		$this->raiseEvent('Disconnect');
 		$this->pool->disconnect($this);
 		@fclose($this->stream);
 	}

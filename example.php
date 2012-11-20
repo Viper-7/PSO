@@ -3,19 +3,25 @@ include 'PSO.php';
 
 $server = new PSO_TCPServer(8005);
 
-$client = new PSO_TCPClient();
-$conn1 = $client->addTarget('localhost', 8005);
-$conn2 = $client->addTarget('localhost', 8005);
+$server->onConnect(function() {
+	$this->send("Hello {$this->clientIP}, How are you today?\r\n");
+});
 
 $server->onData(function($data) {
-	echo "Server received: {$data}";
-	$this->send("Hi there {$this->clientIP}!\r\n");
+	switch(trim(strtolower($data))) {
+		case 'good':
+			if(empty($this->askedAboutYesterday)) {
+				$this->send("Oh thats good! How about yesterday then?\r\n");
+				$this->askedAboutYesterday = true;
+			} else {
+				$this->send("Great! How about the day before that?\r\n");
+			}
+			break;
+		case 'bad':
+			$this->send("Sounds depressing, go away!\r\n");
+			$this->disconnect();
+			break;
+	}
 });
 
-$client->onData(function($data) {
-	echo "Client received: {$data}";
-});
-
-$client->broadcast("Hello, World!\r\n");
-
-PSO::drain($server, $client);
+PSO::drain($server);

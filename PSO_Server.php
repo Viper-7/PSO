@@ -14,4 +14,8 @@ class PSO_Server extends PSO_Connection {
 		$this->pool->addConnection($conn);
 	}
 
+	public function addConnection($conn) {
+		stream_set_read_buffer($conn->stream, 4096);
+		parent::addConnection($conn);
+	}
 }

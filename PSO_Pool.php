@@ -35,7 +35,7 @@ abstract class PSO_Pool {
 	public function addConnection($conn) {
 		$this->connections[] = $conn;
 		$conn->pool = $this;
-		$this->raiseEvent('Connect', $conn, NULL);
+		$this->raiseEvent('Connect', array(), NULL, $conn);
 	}
 	
 	public function readData($conn) {
@@ -54,7 +54,8 @@ abstract class PSO_Pool {
 	}
 	
 	public function disconnect($conn) {
-		$this->raiseEvent('Disconnect', $conn);
+		$conn->raiseEvent('Disconnect');
+		$this->raiseEvent('Disconnect', array(), NULL, $conn);
 		
 		$key = array_search($conn, $this->connections);
 		unset($this->connections[$key]);
