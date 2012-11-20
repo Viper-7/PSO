@@ -1,21 +1,21 @@
 <?php
 include 'PSO.php';
 
-$pool = new PSO_TCPServerPool();
-$pool->openPort(8004);
-$pool->onData(function($data) {
-	$this->send($data);
+$server = new PSO_TCPServer(8005);
+
+$client = new PSO_TCPClient();
+$conn1 = $client->addTarget('localhost', 8005);
+$conn2 = $client->addTarget('localhost', 8005);
+
+$server->onData(function($data) {
+	echo "Server received: {$data}";
+	$this->send("Hi there {$this->clientIP}!\r\n");
 });
 
-
-$clientPool = new PSO_TCPClientPool();
-$clientPool->addTarget('localhost', '8004');
-$clientPool->onData(function($data) {
-	var_dump($data);
-});
-$clientPool->onTick(function() { 
-	$this->broadcast(microtime(true));
+$client->onData(function($data) {
+	echo "Client received: {$data}";
 });
 
+$client->broadcast("Hello, World!\r\n");
 
-PSO::drain($pool, $clientPool);
+PSO::drain($server, $client);

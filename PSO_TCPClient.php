@@ -1,6 +1,12 @@
 <?php
-class PSO_TCPClientPool extends PSO_ClientPool {
+class PSO_TCPClient extends PSO_ClientPool {
 	public static $connection_class = 'PSO_TCPClientConnection';
+	
+	public function __construct() {
+		$args = func_get_args();
+		if($args) 
+			call_user_func_array(array($this, 'addTarget'), $args);
+	}
 
 	public function addTarget($host, $port, $bindip='0.0.0.0') {
 		$class = static::$connection_class;

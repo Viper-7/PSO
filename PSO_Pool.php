@@ -43,6 +43,7 @@ abstract class PSO_Pool {
 		
 		if($data) {
 			$this->raiseEvent('Data', $data, NULL, $conn);
+			$conn->raiseEvent('Data', $data);
 		}
 		
 		return $data;

@@ -1,7 +1,13 @@
 <?php
-class PSO_TCPServerPool extends PSO_ServerPool {
-	public static $connection_class = 'PSO_TCPServerConnection';
+class PSO_HTTPServer extends PSO_ServerPool {
+	public static $connection_class = 'PSO_HTTPServerConnection';
 	
+	public function readData($conn) {
+		$data = parent::readData($conn);
+		$this->raiseEvent('Request', $conn->requestPath, $conn);
+		return $data;
+	}
+		
 	public function openPort($port, $bindip = '0.0.0.0') {
 		$serverID = "{$bindip}:{$port}";
 

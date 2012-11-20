@@ -1,5 +1,5 @@
 <?php
-class PSO_HTTPClientPool extends PSO_TCPClientPool {
+class PSO_HTTPClient extends PSO_ClientPool {
 	public static $connection_class = 'PSO_HTTPClientConnection';
 	
 	protected $concurrency = 1;

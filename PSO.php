@@ -23,22 +23,27 @@ abstract class PSO {
 
 			if(!$read) return;
 			
+			// Hackish fix to catch process closure, leave the process handle in the read array till now
+			$read = array_filter($read, function($stream) { return get_resource_type($stream) != 'process'; });
+			
 			$wait = self::$next_poll - microtime(true);
 			if($wait < 0) $wait = 0;
 			$wait_s = floor($wait);
 			$wait_us = floor(($wait - $wait_s) * 1000000);
 			
-			if(stream_select($read, $write, $except, $wait_s, $wait_us)) {
-				foreach($read as $fp) {
-					list($pool, $conn) = self::find_connection($fp, $pools);
+			if($read || $write) {
+				if(stream_select($read, $write, $except, $wait_s, $wait_us)) {
+					foreach($read as $fp) {
+						list($pool, $conn) = self::find_connection($fp, $pools);
+						
+						$pool->readData($conn);
+					}
 					
-					$pool->readData($conn);
-				}
-				
-				foreach($write as $fp) {
-					list($pool, $conn) = self::find_connection($fp, $pools);
-					
-					$pool->sendBuffer($conn);
+					foreach($write as $fp) {
+						list($pool, $conn) = self::find_connection($fp, $pools);
+						
+						$pool->sendBuffer($conn);
+					}
 				}
 			}
 			

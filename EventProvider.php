@@ -18,7 +18,9 @@ trait EventProvider {
 						continue;
 				}
 
-				call_user_func_array($callback->bindTo($context, $context), $args);
+				$ret = call_user_func_array($callback->bindTo($context, $context), $args);
+				if($ret == 'unregister')
+					unset($this->events[$event][$filter]);
 			}
 		}
 	}
