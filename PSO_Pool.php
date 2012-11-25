@@ -20,16 +20,17 @@ abstract class PSO_Pool {
 	}
 	
 	public function getStreams() {
-		$read = $write = array();
+		$read = $write = $except = array();
 		
 		foreach($this->connections as $conn) {
 			$read[] = $conn->stream;
+			$except[] = $conn->stream;
 			
 			if($conn->hasOutput())
 				$write[] = $conn->stream;
 		}
 		
-		return array($read, $write);
+		return array($read, $write, $except);
 	}
 	
 	public function addConnection($conn) {
@@ -59,5 +60,14 @@ abstract class PSO_Pool {
 		
 		$key = array_search($conn, $this->connections);
 		unset($this->connections[$key]);
+	}
+	
+	public function close() {
+		$this->raiseEvent('Close');
+		
+		foreach($this->connections as $key => $conn) {	
+			$conn->raiseEvent('Close');
+			unset($this->connections[$key]);
+		}
 	}
 }

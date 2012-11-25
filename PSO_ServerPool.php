@@ -14,10 +14,20 @@ abstract class PSO_ServerPool extends PSO_Pool {
 	}
 	
 	public function getStreams() {
-		list($read, $write) = parent::getStreams();
+		list($read, $write, $except) = parent::getStreams();
+
 		foreach($this->servers as $conn) {
 			$read[] = $conn->stream;
 		}
-		return array($read, $write);
+		return array($read, $write, $except);
+	}
+
+	public function close() {
+		parent::close();
+		
+		foreach($this->servers as $key => $server) {
+			$server->close();
+			unset($this->servers[$key]);
+		}
 	}
 }

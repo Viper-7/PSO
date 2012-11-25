@@ -6,4 +6,8 @@ class PSO_ServerConnection extends PSO_Connection {
 		$this->stream = $stream;
 		$this->clientIP = $clientIP;
 	}
+	
+	public function close() {
+		$this->pool->close();
+	}
 }

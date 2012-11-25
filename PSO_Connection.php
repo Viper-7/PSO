@@ -15,9 +15,6 @@ class PSO_Connection {
 	}
 	
 	public function sendBuffer() {
-		if($this->outputBuffer === '')
-			return;
-		
 		if(strlen($this->outputBuffer) > static::$chunk_size) {
 			$chunk = substr($this->outputBuffer, 0, static::$chunk_size);
 			$this->outputBuffer = substr($this->outputBuffer, static::$chunk_size);
@@ -25,9 +22,9 @@ class PSO_Connection {
 			$chunk = $this->outputBuffer;
 			$this->outputBuffer = '';
 		}
-		
+
 		$written = @fwrite($this->stream, $chunk);
-		if(!$written) {
+		if($written === FALSE || $written < strlen($chunk)) {
 			$this->disconnect();
 		}
 	}
@@ -41,7 +38,7 @@ class PSO_Connection {
 	}
 	
 	public function disconnect() {
-		// If the connection is still active, drain the buffer before disconnecting
+		// If the connection is still active, recurse to drain the buffer before disconnecting
 		if(is_resource($this->stream) && $this->outputBuffer) {
 			$client = $this;
 			return $this->pool->onTick(function() use ($client) {
@@ -50,7 +47,6 @@ class PSO_Connection {
 			});
 		}
 		
-		$this->raiseEvent('Disconnect');
 		$this->pool->disconnect($this);
 		@fclose($this->stream);
 	}

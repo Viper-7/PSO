@@ -18,4 +18,9 @@ class PSO_Server extends PSO_Connection {
 		stream_set_read_buffer($conn->stream, 4096);
 		parent::addConnection($conn);
 	}
+	
+	public function close() {
+		@fclose($this->stream);
+		unset($this->stream);
+	}
 }
