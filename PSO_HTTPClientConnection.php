@@ -13,9 +13,27 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseStatus;
 	public $responseBody = '';
 
+	public function getDOM() { 
+		if(isset($this->dom))
+			return $this->dom;
+		
+		libxml_clear_errors();
+		$olderr = libxml_use_internal_errors(true);
+		$dom = new DOMDocument();
+		$dom->loadHTML($this->responseBody);
+		$errors = libxml_get_errors();
+		libxml_use_internal_errors($olderr);
+		
+		$this->dom = $dom;
+		$this->htmlErrors = $errors;
+		
+		return $dom;
+	}
+
 	public function readData() {
 		if(!empty($this->responseHeaders)) {
 			$this->responseBody .= fread($this->stream, 4096);
+			unset($this->dom);
 			
 			$this->pool->handlePartial($this);
 

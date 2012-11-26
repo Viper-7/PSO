@@ -58,32 +58,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function handleResponse($conn) {
-		libxml_clear_errors();
-		$olderr = libxml_use_internal_errors(true);
-		$dom = new DOMDocument();
-		$dom->loadHTML($conn->responseBody);
-		$errors = libxml_get_errors();
-		libxml_use_internal_errors($olderr);
-		
-		$conn->dom = $dom;
-		$conn->htmlErrors = $errors;
-		
 		$this->raiseEvent('Response', array(), NULL, $conn);
 		$conn->raiseEvent('Response');
 		$this->disconnect($conn);
 	}
 	
 	public function handlePartial($conn) {
-		libxml_clear_errors();
-		$olderr = libxml_use_internal_errors(true);
-		$dom = new DOMDocument();
-		$dom->loadHTML($conn->responseBody);
-		$errors = libxml_get_errors();
-		libxml_use_internal_errors($olderr);
-		
-		$conn->dom = $dom;
-		$conn->htmlErrors = $errors;
-		
 		$this->raiseEvent('Partial', array(), NULL, $conn);
 		$conn->raiseEvent('Partial');
 	}

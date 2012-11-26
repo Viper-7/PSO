@@ -4,9 +4,18 @@ include 'PSO.php';
 $start = microtime(true);
 
 $client = new PSO_HTTPClient();
-$client->setConcurrency(12);
+$client->setConcurrency(21);
 
 $client->addTargets(array(
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
 	'http://www.overclockers.com.au/',
 	'http://www.ausgamers.com.au/',
 	'http://www.news.com.au/',
@@ -22,14 +31,11 @@ $client->addTargets(array(
 ));
 
 $client->onPartial(function() {
-	$responseTitle = '';
+	$titles = $this->getDOM()->getElementsByTagName('title');
 
-	$titles = $this->dom->getElementsByTagName('title');
-
-	if($titles->length)
+	if($titles->length) {
 		$responseTitle = $titles->item(0)->textContent;
 
-	if($responseTitle) {
 		echo "Response: {$this->requestURI} {$responseTitle}\r\n";
 		$this->disconnect();
 	}
