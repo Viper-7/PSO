@@ -1,5 +1,5 @@
 <?php
-include 'PSO.php';
+include '../PSO.php';
 
 $server = new PSO_TCPServer(8005);
 
