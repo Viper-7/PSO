@@ -2,9 +2,26 @@
 class PSO_HTTPServer extends PSO_ServerPool {
 	public static $connection_class = 'PSO_HTTPServerConnection';
 	
+	public function __construct($port = NULL, $bindip = '0.0.0.0') {
+		if($port) {
+			$this->openPort($port, $bindip);
+		}
+	}
+	
 	public function readData($conn) {
 		$data = parent::readData($conn);
-		$this->raiseEvent('Request', $conn->requestPath, $conn);
+		
+		if($conn instanceof PSO_HTTPServerConnection) {
+			$conn->decodeRequest($data);
+			
+			if($conn->requestHeaders) {
+				$matched = $this->raiseEvent('Request', array(), $conn->requestPath, $conn);
+				
+				if(!$matched)
+					$this->raiseEvent('MissingRequest', array(), NULL, $conn);
+			}
+		}
+		
 		return $data;
 	}
 		

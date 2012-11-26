@@ -11,6 +11,10 @@ abstract class PSO_Pool {
 		}
 	}
 	
+	public function send($data) {
+		return $this->broadcast($data);
+	}
+	
 	public function findConnection($stream) {
 		foreach($this->connections as $conn) {
 			if($conn->stream == $stream) {

@@ -3,6 +3,8 @@ trait EventProvider {
 	protected $events = array();
 	
 	public function raiseEvent($event, $args=array(), $target=NULL, $context=NULL) {
+		$called = 0;
+		
 		$event = 'on' . $event;
 		
 		if(!$context)
@@ -13,16 +15,20 @@ trait EventProvider {
 		
 		if(isset($this->events[$event])) {
 			foreach($this->events[$event] as $filter => $callback) {
-				if(!$target && !is_int($filter)) {
+				if($target && !is_int($filter)) {
 					if($filter != $target)
 						continue;
 				}
 
 				$ret = call_user_func_array($callback->bindTo($context, $context), $args);
+				$called++;
+				
 				if($ret == 'unregister')
 					unset($this->events[$event][$filter]);
 			}
 		}
+		
+		return $called;
 	}
 	
 	public function __call($name, $args) {
