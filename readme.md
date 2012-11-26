@@ -75,7 +75,6 @@ Planned Features
 
 * gzip Compression
 * http proxy support
-
 * PSO_UDPServer
 * PSO_UDPClient
 * PSO_IRCServer
