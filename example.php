@@ -4,30 +4,23 @@ include 'PSO.php';
 $start = microtime(true);
 
 $client = new PSO_HTTPClient();
-$client->setConcurrency(21);
+$client->setConcurrency(1);
 
 $client->addTargets(array(
 	'http://www.overclockers.com.au/',
 	'http://www.ausgamers.com.au/',
 	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
-	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
-	'http://www.news.com.au/',
+	'http://www.google.com/',
+	'http://www.bing.com/',
+	'http://www.microsoft.com/',
+	'http://www.yahoo.com/',
+	'http://www.amazon.com/',
+	'http://www.rackspace.com/',
+	'http://www.youtube.com/',
+	'http://www.slashdot.org/',
+	'http://www.mozilla.org/',
+	'http://www.wikipedia.org/',
+	'http://www.php.net/'
 ));
 
 $client->onPartial(function() {

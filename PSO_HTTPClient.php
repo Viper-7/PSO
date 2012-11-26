@@ -2,6 +2,8 @@
 class PSO_HTTPClient extends PSO_ClientPool {
 	public static $connection_class = 'PSO_HTTPClientConnection';
 	
+	public $userAgent;
+	
 	protected $concurrency = 10;
 	protected $fetchBodies = true;
 	protected $queue = array();
@@ -25,17 +27,55 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$class = static::$connection_class;
 		
 		$options['http']['ignore_errors'] = 1;
-		$context = stream_context_create($options);
 		
 		while($count && $this->queue) {
 			$target = array_shift($this->queue);
 			
-			// Complex Targets?
-			$stream = fopen($target, 'r', false, $context);
+			$conn = new $class(NULL);
 			
-			$conn = new $class($stream);
 			$conn->requestURI = $target;
+			$conn->contextOptions = $options;
+			$conn->contextOptions['http']['header'] = array();
+			
+			if($this->userAgent)
+				$conn->contextOptions['http']['user_agent'] = $this->userAgent;
+			
+			$this->raiseEvent('BeforeSpawn', array(), NULL, $conn);
+
+			if(!isset($conn->contextOptions['http']['method']))
+				$conn->contextOptions['http']['method'] = $conn->requestMethod;
+			else
+				$conn->requestMethod = $conn->contextOptions['http']['method'];
+			
+			if(is_string($conn->requestHeaders))
+				$conn->requestHeaders = explode("\r\n", $conn->requestHeaders);
+			
+			foreach($conn->requestHeaders as $key => $value) {
+				if(is_int($key)) {
+					$conn->contextOptions['http']['header'][] = $value;
+				} else {
+					$conn->contextOptions['http']['header'][] = "$key: $value";
+				}
+			}
+			
+			$conn->requestHeaders = array();
+			foreach($conn->contextOptions['http']['header'] as $header) {
+				list($key, $value) = explode(':', $header, 2) + array('','');
+				$conn->requestHeaders[$key] = $value;
+			}
+			
+			if(!isset($conn->contextOptions['http']['content']))
+				$conn->contextOptions['http']['content'] = $conn->requestBody;
+			else
+				$conn->requestBody = $conn->contextOptions['http']['content'];
+			
+			$context = stream_context_create($conn->contextOptions);
+			$stream = fopen($conn->requestURI, 'r', false, $context);
+			$conn->stream = $stream;
 			$this->addConnection($conn);
+			
+			$this->raiseEvent('AfterSpawn', array(), NULL, $conn);
+			
 			$count--;
 		}
 		

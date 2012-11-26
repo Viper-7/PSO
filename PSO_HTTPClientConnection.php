@@ -1,10 +1,10 @@
 <?php
 class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $requestURI;
-	public $requestMethod;
-	public $requestPath;
-	public $requestHTTPVersion;
-	public $requestHeaders;
+	public $contextOptions = array();
+
+	public $requestMethod = 'GET';
+	public $requestHeaders = array();
 	public $requestBody;
 	
 	public $responseHeaders = array();
