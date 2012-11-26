@@ -1,6 +1,8 @@
 <?php
 spl_autoload_register(function($class) {
-	if(file_exists($file = "{$class}.php")) {
+	$dir = dirname(realpath(__FILE__));
+	
+	if(file_exists($file = "{$dir}/{$class}.php")) {
 		include $file;
 	}
 });
