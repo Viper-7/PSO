@@ -8,13 +8,17 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	protected $fetchBodies = true;
 	protected $queue = array();
 	
+	public function getStreams() {
+		$this->spawnConnections();
+		return parent::getStreams();
+	}
+	
 	public function setConcurrency($level) {
 		$this->concurrency = $level;
 	}
 	
 	public function addTargets($targets) {
 		$this->queue = array_merge($this->queue, $targets);
-		$this->spawnConnections();
 	}
 	
 	public function disconnect($conn) {
