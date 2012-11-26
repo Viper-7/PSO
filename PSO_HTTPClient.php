@@ -109,7 +109,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 
 	public function handleRedirect($conn) {
-		var_dump("Should not see me");
+		$url = $conn->responseHeaders['Location'];
+		
+		$this->raiseEvent('Redirect', array($url), NULL, $conn);
+		$conn->raiseEvent('Redirect', array($url));
+		
+		$this->addTargets(array($url));
+		$this->disconnect($conn);
 	}
 	
 	public function handleError($conn) {
