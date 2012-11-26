@@ -47,14 +47,19 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		$meta = stream_get_meta_data($this->stream);
 		
 		$headers = $meta['wrapper_data'];
-		$status = array_shift($headers);
-		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', $status);
 
 		foreach($headers as $header) {
-			list($name, $value) = explode(':', $header, 2);
+			if(substr($header, 0, 5) == 'HTTP/') {
+				$status = $header;
+				continue;
+			}
+			
+			list($name, $value) = explode(':', $header, 2) + array('', '');
 			
 			$this->responseHeaders[$name] = trim($value);
 		}
+		
+		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', $status);
 		
 		if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
 			$this->pool->handleHead($this);
