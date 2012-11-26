@@ -53,8 +53,10 @@ For testing servers & simple REST services
 * Called when an onRequest handler could not be found for the requested URI
 
 	
-Shared Events - Available for all stream types
+Shared Events
 ----------------------------------------------
+Available for all stream types
+
 `onConnect`
 * Called when connected to a remote host
 	
@@ -66,3 +68,29 @@ Shared Events - Available for all stream types
 	
 `onClose`
 * Called when the server begins to shut down
+
+
+Planned Features
+================
+
+* gzip Compression
+* http proxy support
+
+* PSO_UDPServer
+* PSO_UDPClient
+* PSO_IRCServer
+* PSO_IRCClient
+* PSO_WebSocketServer
+* PSO_WebSocketClient
+* PSO_FD
+
+
+Possible Modules
+================
+
+* PSO_SSLClient
+* PSO_HTTPSClient
+* PSO_SSHClient
+* PSO_SSHProcess
+* PSO_SSHTunnel
+* PSO_ExpectProcess
