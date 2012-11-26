@@ -19,10 +19,10 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			
 			$this->pool->handlePartial($this);
 
-			if(!$this->stream) return;
-		
-			if(feof($this->stream)) { 
-				$this->pool->handleResponse($this);
+			if($this->stream && feof($this->stream)) { 
+				return $this->pool->handleResponse($this);
+			} else {
+				return;
 			}
 		}
 		
