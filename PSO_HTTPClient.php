@@ -3,6 +3,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public static $connection_class = 'PSO_HTTPClientConnection';
 	
 	public $userAgent;
+	public $captureRedirects = false;
 	
 	protected $concurrency = 10;
 	protected $fetchBodies = true;
@@ -31,6 +32,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$class = static::$connection_class;
 		
 		$options['http']['ignore_errors'] = 1;
+		$options['http']['follow_location'] = intval(!$this->captureRedirects);
 		
 		while($count && $this->queue) {
 			$target = array_shift($this->queue);
