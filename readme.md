@@ -1,11 +1,12 @@
-PHP Stream Objects
-==================
+PHP Stream Objects v0.3.1
+=========================
 
-An event driven, concurrent, object oriented library to encapsulate PHP stream functionality. 
+An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
+Currently supports TCP & HTTP connections (both client & server), and Processes.
 
 Provides a simple callback system to intercept connections/disconnections, incoming data, and many protocol specific conditions
 
-Uses SELECT to provide concurrency handling across multiple streams of any type (You can mix TCP Servers and external Processes with HTTP Clients without worry)
+Uses SELECT to provide concurrency handling across multiple streams of any type (You can mix TCP Servers with HTTP Clients without worry)
 
 
 PSO_TCPClient
