@@ -48,7 +48,7 @@ For testing servers & simple REST services
 `onRequest`
 * Called when a complete request has been received from the client
 	
-`onMissingRequest
+`onMissingRequest`
 * Called when an onRequest handler could not be found for the requested URI
 
 	
