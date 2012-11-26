@@ -4,7 +4,7 @@ include 'PSO.php';
 $start = microtime(true);
 
 $client = new PSO_HTTPClient();
-$client->setConcurrency(10);
+$client->setConcurrency(12);
 
 $client->addTargets(array(
 	'http://www.overclockers.com.au/',
