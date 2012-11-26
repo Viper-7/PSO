@@ -23,7 +23,7 @@ $client->addTargets(array(
 	'http://www.php.net/'
 ));
 
-$client->onPartial(function() {
+$client->onResponse(function() {
 	$titles = $this->getDOM()->getElementsByTagName('title');
 
 	if($titles->length) {
