@@ -1,53 +1,46 @@
 <?php
 include 'PSO.php';
 
-$server = new PSO_TCPServer(8005);
+$start = microtime(true);
 
-$server->onConnect(function() {
-	$this->send("Hello {$this->clientIP}, How are you today?\r\n");
-});
+$client = new PSO_HTTPClient();
+$client->setConcurrency(10);
 
-$server->onData(function($data) {
-	echo $data;
-	
-	switch(trim(strtolower($data))) {
-		case 'good':
-			if(empty($this->askedAboutYesterday)) {
-				$this->send("Oh thats good! How about yesterday then?\r\n");
-				$this->askedAboutYesterday = true;
-			} else {
-				$this->send("Great! How about the day before that?\r\n");
-			}
-			break;
-			
-		case 'bad':
-			$this->send("Sounds depressing, go away!\r\n");
-			$this->close();
-			break;
-	}
-});
+$client->addTargets(array(
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+));
 
+$client->onPartial(function() {
+	$responseTitle = '';
 
+	$titles = $this->dom->getElementsByTagName('title');
 
-$client = new PSO_TCPClient('127.0.0.1', 8005);
+	if($titles->length)
+		$responseTitle = $titles->item(0)->textContent;
 
-$client->onData(function($data) {
-	echo $data;
-	
-	if(strpos($data, 'How are you today?') !== FALSE) {
-		$this->send("good\r\n");
-		
-	} elseif(strpos($data, 'How about yesterday then?') !== FALSE) {
-		$this->send("good\r\n");
-		
-	} elseif(strpos($data, 'How about the day before that?') !== FALSE) {
-		$this->send("bad\r\n");
-		
-	} else {
-		$this->send("fine.\r\n");
+	if($responseTitle) {
+		echo "Response: {$this->requestURI} {$responseTitle}\r\n";
 		$this->disconnect();
 	}
 });
 
+$client->onError(function() {
+	echo "Error: {$this->requestURI} {$this->responseStatusCode} {$this->responseStatus}\r\n";
+});
 
-PSO::drain($server, $client);
+
+PSO::drain($client);
+
+$end = microtime(true);
+echo "Operation took: " . number_format($end - $start, 6) . " seconds\r\n";

@@ -5,7 +5,6 @@ class PSO_ClientConnection extends PSO_Connection {
 	}
 	
 	public function addConnection($conn) {
-		stream_set_read_buffer($conn->stream, 4096);
 		parent::addConnection($conn);
 	}
 }

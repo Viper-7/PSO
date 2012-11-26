@@ -49,5 +49,6 @@ class PSO_Connection {
 		
 		$this->pool->disconnect($this);
 		@fclose($this->stream);
+		$this->stream = NULL;
 	}
 }
