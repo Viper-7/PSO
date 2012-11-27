@@ -1,4 +1,4 @@
-PHP Stream Objects v0.3.6
+PHP Stream Objects v0.3.9
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
@@ -151,12 +151,8 @@ Available for all stream types
 Planned Features
 ================
 
-* gzip Compression
-* http proxy support
 * PSO_UDPServer
 * PSO_UDPClient
-* PSO_IRCServer
-* PSO_IRCClient
 * PSO_WebSocketServer
 * PSO_WebSocketClient
 * PSO_FD
@@ -165,6 +161,8 @@ Planned Features
 Possible Modules
 ================
 
+* gzip Compression
+* http proxy support
 * PSO_SSLClient
 * PSO_HTTPSClient
 * PSO_SSHClient
