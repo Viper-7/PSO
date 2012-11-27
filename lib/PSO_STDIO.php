@@ -1,6 +1,6 @@
 <?php
 class PSO_STDIO extends PSO_Pool {
-	public static $connection_class = 'PSO_FDConnection';
+	public static $connection_class = 'PSO_STDIOConnection';
 	
 	public function __construct() {
 		$class = static::$connection_class;
@@ -52,6 +52,7 @@ class PSO_STDIO extends PSO_Pool {
 	}
 
 	public function readData($conn) {
+		echo "_\r";
 		$data = $conn->readData();
 		
 		if($data) {
