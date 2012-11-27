@@ -262,6 +262,9 @@ class PSO_IRCClientConnection extends PSO_ClientConnection {
 					$this->pool->raiseEvent('Notice', array($content, $user), NULL, $chan);
 					$this->raiseEvent('Notice', array($content, $user), NULL, $chan);
 					$chan->raiseEvent('Notice', array($content, $user));
+				} else {
+					$this->pool->raiseEvent('PrivateNotice', array($content), NULL, $user);
+					$this->raiseEvent('PrivateNotice', array($content), NULL, $user);
 				}
 				break;
 			case 'MODE':

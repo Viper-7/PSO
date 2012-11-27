@@ -1,13 +1,38 @@
-PHP Stream Objects v0.3.1
+PHP Stream Objects v0.3.6
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
-Currently supports TCP & HTTP connections (both client & server), and Processes.
+Currently supports TCP & HTTP connections (both client & server), Processes and a simple IRC Client.
 
-Provides a simple callback system to intercept connections/disconnections, incoming data, and many protocol specific conditions
+Allows you to connect to or run multiple services in PHP using a single process/thread.
+PSO abstracts away all the complexities of dealing with non-blocking streams, file descriptors and SELECT.
 
-Uses SELECT to provide concurrency handling across multiple streams of any type (You can mix TCP Servers with HTTP Clients without worry)
+Provides an easy to use callback system to intercept connections/disconnections, incoming data, and many protocol specific conditions.
 
+Uses SELECT to provide concurrency handling across multiple streams of any type, You can pass any mix of PSO objects to PSO::drain() to handle them all concurrently.
+
+
+Examples
+========
+
+* http_example.php
+Demonstrates a page title scraping engine for HTML/HTTP, Connects to a large number of services in parallel, Dropping the connection as soon as the page title is known.
+
+* irc_example.php
+Demonstrates a simple connection to an IRC server. Automatically joining a channel, rejoining it when kicked, and responding to both public & private messages.
+
+* http_server_example.php
+Demonstrates a basic HTTP server, which delivers response for two URLs (/ and /date), and a 404 result for any other requested URL.
+
+* tcp_example.php
+Demonstrates a basic TCP Server and Client, sending messages back & forth between them.
+Highlights some of the finer points of PSO such as the I/O buffer handling on disconnection (Server still receives "fine.")
+
+
+
+Drivers
+=======
+This is a list of the currently implemented PSO drivers, and what events they provide.
 
 PSO_TCPClient
 -------------
@@ -52,6 +77,48 @@ For testing servers & simple REST services
 `onMissingRequest`
 * Called when an onRequest handler could not be found for the requested URI
 
+PSO_IRCClient
+-------------
+A simple IRC client, can join/part channels, send/receive messages, and tracks users in each channel
+	
+`onMessage`
+* Called when a message is received in a channel
+
+`onPrivateMessage`
+* Called when a message is received in private
+
+`onKick`
+* Called when a user is kicked from the channel
+
+`onKicked`
+* Called when the bot is kicked from the channel
+
+`onJoin`
+* Called when a user joins the channel
+
+`onJoined`
+* Called when the bot joins the channel
+
+`onPart`
+* Called when a user leaves the channel
+
+`onQuit`
+* Called when a user disconnects from IRC
+
+`onNotice`
+* Called when a notice is received from a channel
+
+`onPrivateNotice`
+* Called when a notice is received in private
+
+`onMode`
+* Called when channel modes are changed
+
+`onConnected`
+* Called after receiving the MOTD from the server (fully connected)
+
+`onJoined`
+* Called after joining a new channel
 	
 Shared Events
 ----------------------------------------------
