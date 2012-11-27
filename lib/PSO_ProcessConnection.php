@@ -14,7 +14,8 @@ class PSO_ProcessConnection extends PSO_Connection {
 	
 	public function readData() {
 		$read = $write = $except = array();
-
+		$data = NULL;
+		
 		if($this->pool->hasData($this, 'stdout')) {
 
 			fseek($this->stdout, $this->stdoutLoc, SEEK_SET);

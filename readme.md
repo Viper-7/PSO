@@ -53,9 +53,25 @@ PSO_TCPServer
 -------------
 Easy to use TCP server with automatic connection handling
 
+PSO_UDPClient
+-------------
+For interacting with services on a UDP port
+
+PSO_UDPServer
+-------------
+Easy to use UDP server with virtual connection handling for multiple client support
+
 PSO_Process
 -----------
 Runs a command in a new process (asynchronously)
+
+PSO_FD
+------
+For interacting with a file descriptor attached to the current process
+
+PSO_STDIO
+---------
+For interacting with the console attached to the current process (STDIN, STDOUT & STDERR)
 
 PSO_HTTPClient
 --------------
@@ -151,11 +167,8 @@ Available for all stream types
 Planned Features
 ================
 
-* PSO_UDPServer
-* PSO_UDPClient
 * PSO_WebSocketServer
 * PSO_WebSocketClient
-* PSO_FD
 
 
 Possible Modules

@@ -1,7 +1,6 @@
 <?php
 class PSO_Process extends PSO_Pool {
 	public static $connection_class = 'PSO_ProcessConnection';
-	protected $doWrites = false;	// ASYNC - Hold off on writes until the process has started
 	
 	public function findConnection($stream) {
 		foreach($this->connections as $conn) {
@@ -22,16 +21,19 @@ class PSO_Process extends PSO_Pool {
 	}
 	
 	public function getStreams() {
-		$read = $write = array();
+		$read = $write = $except = array();
 		
 		if(PHP_OS == 'WINNT') {
 			foreach($this->connections as $conn) {
 				if($this->hasData($conn, 'stdout'))
 					$read[] = $conn->stdout;
+
+				if($this->hasData($conn, 'stderr'))
+					$read[] = $conn->stderr;
 				
 				$read[] = $conn->stream;
 				
-				if($conn->hasOutput() && $this->doWrites) {
+				if($conn->hasOutput()) {
 					$write[] = $conn->stdin;
 				}
 			}
@@ -40,12 +42,12 @@ class PSO_Process extends PSO_Pool {
 				$read[] = $conn->stdout;
 				$read[] = $conn->stderr;
 				
-				if($conn->hasOutput())		// need doWrites check on *nix ?
+				if($conn->hasOutput())
 					$write[] = $conn->stdin;
 			}
 		}
 		
-		return array($read, $write);
+		return array($read, $write, $except);
 	}
 	
 	public function open($command, $path=NULL, $env=array()) {
@@ -83,14 +85,5 @@ class PSO_Process extends PSO_Pool {
 		}
 		
 		$this->addConnection($conn);
-		
-		$start = microtime(true);
-		$this->onTick(function() use ($start) { if(microtime(true) - $start > 0.1) { $this->enableWrites(); return 'unregister'; }});
-
-		return $conn;
-	}
-	
-	protected function enableWrites() {
-		$this->doWrites = true;
 	}
 }

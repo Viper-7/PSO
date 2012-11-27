@@ -32,9 +32,15 @@ abstract class PSO {
 			if($wait < 0) $wait = 0;
 			$wait_s = floor($wait);
 			$wait_us = floor(($wait - $wait_s) * 1000000);
-
+			
 			if($read || $write || $except) {
 				if(stream_select($read, $write, $except, $wait_s, $wait_us)) {
+					foreach($write as $fp) {
+						list($pool, $conn) = self::find_connection($fp, $pools);
+						
+						$pool->sendBuffer($conn);
+					}
+
 					foreach($read as $fp) {
 						list($pool, $conn) = self::find_connection($fp, $pools);
 						
@@ -42,12 +48,6 @@ abstract class PSO {
 							$pool->readData($conn);
 						else
 							$conn->disconnect();
-					}
-					
-					foreach($write as $fp) {
-						list($pool, $conn) = self::find_connection($fp, $pools);
-						
-						$pool->sendBuffer($conn);
 					}
 				}
 			}
