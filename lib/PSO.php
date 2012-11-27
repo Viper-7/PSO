@@ -44,10 +44,12 @@ abstract class PSO {
 					foreach($read as $fp) {
 						list($pool, $conn) = self::find_connection($fp, $pools);
 						
-						if($conn->stream)
-							$pool->readData($conn);
-						else
-							$conn->disconnect();
+						if($conn) {
+							if($conn->stream)
+								$pool->readData($conn);
+							else
+								$conn->disconnect();
+						}
 					}
 				}
 			}

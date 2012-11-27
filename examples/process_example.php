@@ -11,6 +11,6 @@ $pool->onTick(function() {
 	$this->send("\r\n");
 });
 
-$proc = $pool->open("time /?");
+$proc = $pool->open("time");
 
 PSO::drain($pool);
