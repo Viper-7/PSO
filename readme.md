@@ -15,16 +15,24 @@ Uses SELECT to provide concurrency handling across multiple streams of any type,
 Examples
 ========
 
-* http_example.php
+http_example.php
+----------------
+
 Demonstrates a page title scraping engine for HTML/HTTP, Connects to a large number of services in parallel, Dropping the connection as soon as the page title is known.
 
-* irc_example.php
+irc_example.php
+---------------
+
 Demonstrates a simple connection to an IRC server. Automatically joining a channel, rejoining it when kicked, and responding to both public & private messages.
 
-* http_server_example.php
+http_server_example.php
+-----------------------
+
 Demonstrates a basic HTTP server, which delivers response for two URLs (/ and /date), and a 404 result for any other requested URL.
 
-* tcp_example.php
+tcp_example.php
+---------------
+
 Demonstrates a basic TCP Server and Client, sending messages back & forth between them.
 Highlights some of the finer points of PSO such as the I/O buffer handling on disconnection (Server still receives "fine.")
 
