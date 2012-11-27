@@ -11,6 +11,8 @@ Provides an easy to use callback system to intercept connections/disconnections,
 
 Uses SELECT to provide concurrency handling across multiple streams of any type, You can pass any mix of PSO objects to PSO::drain() to handle them all concurrently.
 
+  
+  
 
 Examples
 ========
@@ -36,7 +38,8 @@ tcp_example.php
 Demonstrates a basic TCP Server and Client, sending messages back & forth between them.
 Highlights some of the finer points of PSO such as the I/O buffer handling on disconnection (Server still receives "fine.")
 
-
+  
+  
 
 Drivers
 =======
