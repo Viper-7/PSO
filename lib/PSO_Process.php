@@ -12,12 +12,16 @@ class PSO_Process extends PSO_Pool {
 	
 	public function hasData($conn, $prop) {
 		$stream = $conn->$prop;
-		
-		$loc = ftell($stream);
-		$data = fread($stream, 1);
-		fseek($stream, $loc, SEEK_SET);
 
-		return $data !== '' && $data !== FALSE;
+		if(PHP_OS == 'WINNT') {
+			$loc = ftell($stream);
+			$data = fread($stream, 1);
+			fseek($stream, $loc, SEEK_SET);
+
+			return $data !== '' && $data !== FALSE;
+		} else {
+			return !feof($stream);
+		}
 	}
 	
 	public function getStreams() {
