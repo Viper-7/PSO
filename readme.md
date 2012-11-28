@@ -18,8 +18,8 @@ Uses SELECT to provide concurrency handling across multiple streams of any type,
 Requirements
 ============
 
-PHP 5.4+
-allow_url_fopen enabled in php.ini
+* PHP 5.4+
+* allow_url_fopen enabled in php.ini
 
 <br/>
 
