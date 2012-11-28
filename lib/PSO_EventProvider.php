@@ -1,5 +1,5 @@
 <?php
-trait EventProvider {
+trait PSO_EventProvider {
 	protected $events = array();
 	
 	public function raiseEvent($event, $args=array(), $target=NULL, $context=NULL) {

@@ -1,4 +1,4 @@
-PHP Stream Objects v0.4.4
+PHP Stream Objects v0.4.5
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
@@ -12,8 +12,6 @@ Provides an easy to use callback system to intercept connections/disconnections,
 Uses SELECT to provide concurrency handling across multiple streams of any type, You can pass any mix of PSO objects to PSO::drain() to handle them all concurrently.
 
 <br/>
-<br/>
-
 
 Requirements
 ============
@@ -26,40 +24,40 @@ Requirements
 Examples
 ========
 
-http_example.php
+[http_example.php](https://github.com/Viper-7/PSO/blob/master/examples/http_example.php)
 ----------------
 
 Demonstrates a page title scraping engine for HTML/HTTP, Connects to a large number of services in parallel, Dropping the connection as soon as the page title is known.
 
-irc_example.php
+[irc_example.php](https://github.com/Viper-7/PSO/blob/master/examples/irc_example.php)
 ---------------
 
 Demonstrates a simple connection to an IRC server. Automatically joining a channel, rejoining it when kicked, and responding to both public & private messages.
 
-http_server_example.php
+[http_server_example.php](https://github.com/Viper-7/PSO/blob/master/examples/http_server_example.php)
 -----------------------
 
 Demonstrates a basic HTTP server, which delivers response for two URLs (/ and /date), and a 404 result for any other requested URL.
 
-tcp_example.php
+[tcp_example.php](https://github.com/Viper-7/PSO/blob/master/examples/tcp_example.php)
 ---------------
 
 Demonstrates a basic TCP Server and Client, sending messages back & forth between them.
 Highlights some of the finer points of PSO such as the I/O buffer handling on disconnection (Server still receives "fine.")
 
-udp_example.php
+[udp_example.php](https://github.com/Viper-7/PSO/blob/master/examples/udp_example.php)
 ---------------
 Demonstrates a basic UDP Server and Client, sending messages back & forth between them.
 
-stdio_example.php
+[stdio_example.php](https://github.com/Viper-7/PSO/blob/master/examples/stdio_example.php)
 -----------------
 Demonstrates communication with the local console via STDIN/STDOUT/STDERR File Descriptors
 
-fd_example.php
+[fd_example.php](https://github.com/Viper-7/PSO/blob/master/examples/fd_example.php)
 --------------
 Demonstrates the same communication as stdio_example.php, using individual file descriptors
 
-process_example.php
+[process_example.php](https://github.com/Viper-7/PSO/blob/master/examples/process_example.php)
 -------------------
 Demonstrates running an external process
 

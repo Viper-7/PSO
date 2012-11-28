@@ -1,6 +1,6 @@
 <?php
 abstract class PSO_Pool {
-	use EventProvider;
+	use PSO_EventProvider;
 	
 	public static $connection_class = 'PSO_Connection';
 	protected $connections = array();

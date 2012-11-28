@@ -1,6 +1,6 @@
 <?php
 class PSO_Connection {
-	use EventProvider;
+	use PSO_EventProvider;
 
 	public static $chunk_size = 4096;
 	

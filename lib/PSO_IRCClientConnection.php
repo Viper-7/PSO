@@ -1,6 +1,6 @@
 <?php
 class PSO_IRCClientUser {
-	use EventProvider;
+	use PSO_EventProvider;
 	
 	public $nick;
 	public $ident;
@@ -20,7 +20,7 @@ class PSO_IRCClientUser {
 }
 
 class PSO_IRCClientChannel {
-	use EventProvider;
+	use PSO_EventProvider;
 	
 	public $users = array();
 	public $name;
