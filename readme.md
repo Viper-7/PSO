@@ -1,4 +1,4 @@
-PHP Stream Objects v0.4.3
+PHP Stream Objects v0.4.4
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
@@ -12,6 +12,15 @@ Provides an easy to use callback system to intercept connections/disconnections,
 Uses SELECT to provide concurrency handling across multiple streams of any type, You can pass any mix of PSO objects to PSO::drain() to handle them all concurrently.
 
 <br/>
+<br/>
+
+
+Requirements
+============
+
+PHP 5.4+
+allow_url_fopen enabled in php.ini
+
 <br/>
 
 Examples
