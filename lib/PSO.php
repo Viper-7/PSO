@@ -11,6 +11,11 @@ abstract class PSO {
 		}
 	}
 
+	public function connect($pool1, $pool2) {
+		$pool = new PSO_ConnectedPool($pool1, $pool2);
+		return $pool
+	}
+	
 	public static function drain() {
 		$pools = func_get_args();
 		

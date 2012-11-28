@@ -1,8 +1,8 @@
-PHP Stream Objects v0.4.2
+PHP Stream Objects v0.4.3
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
-Currently supports TCP & HTTP connections (both client & server), Processes and a simple IRC Client.
+Currently supports TCP & UDP sockets, HTTP connections (both client & server), Processes, Standard input/output/error (and other attached FDs), and a simple IRC Client.
 
 Allows you to connect to or run multiple services in PHP using a single process/thread.
 PSO abstracts away all the complexities of dealing with non-blocking streams, file descriptors and SELECT.
