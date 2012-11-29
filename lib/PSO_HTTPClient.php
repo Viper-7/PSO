@@ -22,6 +22,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->queue = array_merge($this->queue, $targets);
 	}
 	
+	public function addTarget($target) {
+		$this->addTargets(array($target));
+		$this->spawnConnections();
+		return $this->connections[$target];
+	}
+	
 	public function disconnect($conn) {
 		parent::disconnect($conn);
 		$this->spawnConnections();
@@ -76,11 +82,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 				$conn->requestBody = $conn->contextOptions['http']['content'];
 			
 			$context = stream_context_create($conn->contextOptions);
-			$stream = fopen($conn->requestURI, 'r', false, $context);
+			$stream = @fopen($conn->requestURI, 'r', false, $context);
 			$conn->stream = $stream;
-			$this->addConnection($conn);
-			
-			$this->raiseEvent('AfterSpawn', array(), NULL, $conn);
+
+			$this->connections[$conn->requestURI] = $conn;
+			$conn->pool = $this;
+			$this->raiseEvent('Connect', array(), NULL, $conn);
 			
 			$count--;
 		}
