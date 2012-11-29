@@ -22,7 +22,7 @@ $server->onData(function($data) {
 			
 		case 'bad':
 			$this->send("Sounds depressing, go away!\r\n");
-			$this->close();
+			$this->disconnect();
 			break;
 	}
 });

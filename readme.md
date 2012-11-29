@@ -1,4 +1,4 @@
-PHP Stream Objects v0.4.7
+PHP Stream Objects v0.4.8
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
@@ -28,6 +28,11 @@ Examples
 ----------------
 
 Demonstrates a page title scraping engine for HTML/HTTP, Connects to a large number of services in parallel, Dropping the connection as soon as the page title is known.
+
+[http_content_example.php](https://github.com/Viper-7/PSO/blob/master/examples/http_content_example.php)
+----------------
+
+Demonstrates a script to fetch a HTML page, parse it, gather all linked css stylesheets & javascript code, and load all content into an array.
 
 [irc_example.php](https://github.com/Viper-7/PSO/blob/master/examples/irc_example.php)
 ---------------
@@ -102,14 +107,21 @@ PSO_HTTPClient
 Native support for DOMDocument
 Supports parsing of partial requests
 
+`onQueue`
+* Called when a connection is added to a queue.
+* Can be used to add request specific information (headers, cookies, post fields, etc)
+
+`onConnect`
+* Called once a connection is established to the remote server.
+
 `onHeaders`
-* Called once HTTP headers have been received from the remote server
+* Called once HTTP headers have been received from the remote server.
 	
 `onResponse`
-* Called once the complete HTTP response has been received from the remote server
+* Called once the complete HTTP response has been received from the remote server.
 	
 `onPartial`
-* Like onResponse, but will be called as each packet is received, until a complete document is loaded
+* Like onResponse, but will be called as each packet is received, until a complete document is loaded.
 
 `onError`
 * Called on an error status code (not 2xx or 3xx)

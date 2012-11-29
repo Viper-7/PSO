@@ -31,6 +31,31 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		
 		return $dom;
 	}
+	
+	public function setPostVars($data) {
+		if($this->requestBody) {
+			trigger_error('Cannot send post vars in a request that already has a body!');
+		}
+		
+		$this->requestMethod = 'POST';
+		$this->requestBody = http_build_query($data);
+	}
+	
+	public function setCookie($name, $value, $expires=null, $path=null, $domain=null, $secure=null) {
+		$parts = array();
+		if(!is_null($expires) && is_int($expires)) {
+			$expires = date('r', $expires);
+		}
+		
+		$vars = array('expires', 'path', 'domain', 'secure');
+		foreach($vars as $var) {
+			if(!is_null($$var))
+				$parts[] = $var . '=' . $$var;
+		}
+		
+		//Set-Cookie: value[; expires=date][; domain=domain][; path=path][; secure]
+		$this->requestHeaders['Set-Cookie'][] = "{$name}={$value}";
+	}
 
 	public function readData() {
 		if(!empty($this->responseHeaders)) {
@@ -70,5 +95,9 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		} else {
 			$this->pool->handleError($this);
 		}
+	}
+
+	public function joinURL($base, $added) {
+		return $this->pool->joinURL($base, $added);
 	}
 }

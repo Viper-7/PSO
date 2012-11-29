@@ -3,6 +3,7 @@ abstract class PSO_Pool {
 	use PSO_EventProvider;
 	
 	public static $connection_class = 'PSO_Connection';
+	public $open = true;
 	protected $connections = array();
 	
 	public function broadcast($data) {
@@ -78,5 +79,7 @@ abstract class PSO_Pool {
 			$conn->raiseEvent('Close');
 			unset($this->connections[$key]);
 		}
+		
+		$this->open = false;
 	}
 }

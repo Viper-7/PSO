@@ -2,7 +2,7 @@
 class PSO_Connection {
 	use PSO_EventProvider;
 
-	public static $chunk_size = 4096;
+	public static $chunk_size = 8192;
 	
 	public $pool;
 	public $stream;

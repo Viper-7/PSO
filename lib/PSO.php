@@ -22,13 +22,15 @@ abstract class PSO {
 		while(true) {
 			$read = $write = $except = array();
 			
+			$open = false;
 			foreach($pools as $pool) {
 				list($poolRead, $poolWrite, $poolExcept) = $pool->getStreams();
 				$read = array_merge($read, $poolRead);
 				$write = array_merge($write, $poolWrite);
+				if($pool->open) $open = true;
 			}
-
-			if(!$read) return;
+			
+			if(!$open) return;
 			
 			// Hackish fix to catch process closure, leave the process handle in the read array until now
 			$read = array_filter($read, function($stream) { return get_resource_type($stream) != 'process'; });
