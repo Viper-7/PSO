@@ -27,6 +27,11 @@ abstract class PSO_Pool {
 		$read = $write = $except = array();
 		
 		foreach($this->connections as $conn) {
+			if(!$conn->stream) {
+				$conn->disconnect();
+				continue;
+			}
+			
 			$read[] = $conn->stream;
 			$except[] = $conn->stream;
 			
