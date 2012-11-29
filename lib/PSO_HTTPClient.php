@@ -11,6 +11,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	public function getStreams() {
 		$this->spawnConnections();
+		
+		foreach($this->connections as $conn) {
+			if(!$conn->hasInit) {
+				$this->initalizeConnection($conn);
+			}
+		}
+		
 		return parent::getStreams();
 	}
 	
@@ -23,9 +30,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function addTarget($target) {
-		$this->addTargets(array($target));
-		$this->spawnConnections();
-		return $this->connections[$target];
+		return $this->createConnection($target);
 	}
 	
 	public function disconnect($conn) {
@@ -33,63 +38,70 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->spawnConnections();
 	}
 	
+	protected function createConnection($target) {
+		$class = static::$connection_class;
+		$conn = new $class(NULL);
+		
+		$conn->requestURI = $target;
+		
+		$conn->contextOptions = array();
+		$conn->contextOptions['http']['header'] = array();
+		$conn->contextOptions['http']['ignore_errors'] = 1;
+		$conn->contextOptions['http']['follow_location'] = intval(!$this->captureRedirects);
+		
+		if($this->userAgent)
+			$conn->contextOptions['http']['user_agent'] = $this->userAgent;
+		
+		$this->raiseEvent('BeforeSpawn', array(), NULL, $conn);
+
+		if(!isset($conn->contextOptions['http']['method']))
+			$conn->contextOptions['http']['method'] = $conn->requestMethod;
+		else
+			$conn->requestMethod = $conn->contextOptions['http']['method'];
+		
+		if(is_string($conn->requestHeaders))
+			$conn->requestHeaders = explode("\r\n", $conn->requestHeaders);
+		
+		foreach($conn->requestHeaders as $key => $value) {
+			if(is_int($key)) {
+				$conn->contextOptions['http']['header'][] = $value;
+			} else {
+				$conn->contextOptions['http']['header'][] = "$key: $value";
+			}
+		}
+		
+		$conn->requestHeaders = array();
+		foreach($conn->contextOptions['http']['header'] as $header) {
+			list($key, $value) = explode(':', $header, 2) + array('','');
+			$conn->requestHeaders[$key] = $value;
+		}
+		
+		if(!isset($conn->contextOptions['http']['content']))
+			$conn->contextOptions['http']['content'] = $conn->requestBody;
+		else
+			$conn->requestBody = $conn->contextOptions['http']['content'];
+		
+		$this->connections[$conn->requestURI] = $conn;
+		
+		return $conn;
+	}
+	
+	protected function initalizeConnection($conn) {
+		$context = stream_context_create($conn->contextOptions);
+		$stream = @fopen($conn->requestURI, 'r', false, $context);
+
+		$conn->stream = $stream;
+		$conn->pool = $this;
+		$conn->hasInit = true;
+		
+		$this->raiseEvent('Connect', array(), NULL, $conn);
+	}
+	
 	protected function spawnConnections() {
 		$count = $this->concurrency - count($this->connections);
-		$class = static::$connection_class;
 		
-		$options['http']['ignore_errors'] = 1;
-		$options['http']['follow_location'] = intval(!$this->captureRedirects);
-		
-		while($count && $this->queue) {
-			$target = array_shift($this->queue);
-			
-			$conn = new $class(NULL);
-			
-			$conn->requestURI = $target;
-			$conn->contextOptions = $options;
-			$conn->contextOptions['http']['header'] = array();
-			
-			if($this->userAgent)
-				$conn->contextOptions['http']['user_agent'] = $this->userAgent;
-			
-			$this->raiseEvent('BeforeSpawn', array(), NULL, $conn);
-
-			if(!isset($conn->contextOptions['http']['method']))
-				$conn->contextOptions['http']['method'] = $conn->requestMethod;
-			else
-				$conn->requestMethod = $conn->contextOptions['http']['method'];
-			
-			if(is_string($conn->requestHeaders))
-				$conn->requestHeaders = explode("\r\n", $conn->requestHeaders);
-			
-			foreach($conn->requestHeaders as $key => $value) {
-				if(is_int($key)) {
-					$conn->contextOptions['http']['header'][] = $value;
-				} else {
-					$conn->contextOptions['http']['header'][] = "$key: $value";
-				}
-			}
-			
-			$conn->requestHeaders = array();
-			foreach($conn->contextOptions['http']['header'] as $header) {
-				list($key, $value) = explode(':', $header, 2) + array('','');
-				$conn->requestHeaders[$key] = $value;
-			}
-			
-			if(!isset($conn->contextOptions['http']['content']))
-				$conn->contextOptions['http']['content'] = $conn->requestBody;
-			else
-				$conn->requestBody = $conn->contextOptions['http']['content'];
-			
-			$context = stream_context_create($conn->contextOptions);
-			$stream = @fopen($conn->requestURI, 'r', false, $context);
-			$conn->stream = $stream;
-
-			$this->connections[$conn->requestURI] = $conn;
-			$conn->pool = $this;
-			$this->raiseEvent('Connect', array(), NULL, $conn);
-			
-			$count--;
+		while($this->queue && $count--) {
+			$conn = $this->createConnection(array_shift($this->queue));
 		}
 		
 		if(empty($this->queue) && empty($this->connections)) {

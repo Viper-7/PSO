@@ -12,6 +12,8 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseStatusCode;
 	public $responseStatus;
 	public $responseBody = '';
+	
+	public $hasInit = false;
 
 	public function getDOM() { 
 		if(isset($this->dom))
