@@ -133,7 +133,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected function initalizeConnection($conn) {
 		$context = stream_context_create($conn->contextOptions);
-		$url = 'tcp' . substr($conn->requestURI, 3);
+		$url = 'tcp' . substr($conn->requestURI, 4);
 		$stream = @fopen($url, 'r', false, $context);
 		
 		$this->requestCount += 1;
