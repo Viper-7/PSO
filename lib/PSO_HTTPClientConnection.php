@@ -4,7 +4,12 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $contextOptions = array();
 
 	public $requestMethod = 'GET';
-	public $requestHeaders = array();
+	public $requestHeaders = array(
+		'Accept' => 'text/html',
+		'Connection' => 'close',
+		'Accept-Language' => 'en-US,en;q=0.6',
+	);
+	
 	public $requestBody;
 	
 	public $responseHeaders = array();

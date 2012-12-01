@@ -135,7 +135,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$context = stream_context_create($conn->contextOptions);
 		$parts = parse_url($conn->requestURI);
 		$url = "tcp://{$parts['host']}:80";
-		$stream = stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
+		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
 		if(!$stream) {
 			return $this->handleError($conn, 'unknown');
