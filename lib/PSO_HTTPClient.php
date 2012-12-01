@@ -48,10 +48,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->concurrency = $level;
 	}
 	
-	public function addTargets($targets) {
+	public function addTargets($targets, $onResponse=null) {
 		foreach($targets as $target) {
 			$conn = $this->createConnection($target);
 			$conns[$target] = $conn;
+			if(is_callable($onResponse)) {
+				$conn->onResponse($onResponse);
+			}
 		}
 		
 		return $conns;

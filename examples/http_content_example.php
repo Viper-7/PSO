@@ -1,8 +1,24 @@
 <?php
 include '../PSO.php';
 
-// Target URL to scrape
-$url = 'http://codepad.viper-7.com/';
+// Target URLs to scrape
+$urls = array(
+	'http://codepad.viper-7.com/',
+	'http://www.overclockers.com.au/',
+	'http://www.ausgamers.com.au/',
+	'http://www.news.com.au/',
+	'http://www.google.com/',
+	'http://www.bing.com/',
+	'http://www.microsoft.com/',
+	'http://www.yahoo.com/',
+	'http://www.amazon.com/',
+	'http://www.rackspace.com/',
+	'http://www.youtube.com/',
+	'http://www.slashdot.org/',
+	'http://www.mozilla.org/',
+	'http://www.wikipedia.org/',
+	'http://www.php.net/'
+);
 
 $content = array();
 $pool = new PSO_HTTPClient();
@@ -11,10 +27,7 @@ $pool = new PSO_HTTPClient();
 $pool->setConcurrency(5);
 
 // Add the main page to the queue
-$root = $pool->addTarget($url);
-
-// Handle the response for $url
-$root->onResponse(function() use (&$content) {
+$pool->addTargets($urls, function() use (&$content) {
 	// Store the response in the result array
 	$content['document'][$this->requestURI] = $this->responseBody;
 	
