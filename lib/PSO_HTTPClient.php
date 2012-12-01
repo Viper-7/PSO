@@ -135,7 +135,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$context = stream_context_create($conn->contextOptions);
 		parse_url($conn->requestURI, $parts);
 		
-		$url = "tcp://{$parts['host']}";
+		$url = "tcp://{$parts['host']}:80";
 		$stream = @fopen($url, 'r', false, $context);
 		
 		if(!$stream) {
