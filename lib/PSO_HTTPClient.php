@@ -126,14 +126,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		else
 			$conn->requestBody = $conn->contextOptions['http']['content'];
 		
-		$this->connections[] = $conn;
-		
-		return $conn;
-	}
-	
-	protected function initalizeConnection($conn) {
-		$context = stream_context_create($conn->contextOptions);
 
+		$context = stream_context_create($conn->contextOptions);
 		$parts = parse_url($conn->requestURI);
 		$url = "tcp://{$parts['host']}:80";
 		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
@@ -143,9 +137,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 
 		$conn->stream = $stream;
-		$conn->hasInit = true;
-		$this->active[] = $conn;
-
+		$this->connections[] = $conn;
+		
+		return $conn;
+	}
+	
+	protected function initalizeConnection($conn) {
+		$parts = parse_url($conn->requestURI);
 		$url = $this->packURL($parts);
 		$host = $parts['host'];
 		unset($parts['scheme'], $parts['host']);
@@ -165,11 +163,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$conn->send("\r\n");
 		
 		$this->requestCount += 1;
+		$conn->hasInit = true;
+		$this->active[] = $conn;
 		
 		$this->raiseEvent('Connect', array(), NULL, $conn);
 		$conn->raiseEvent('Connect');
-		
-		return $stream;
+
+		return $conn;
 	}
 		
 	public function handleHead($conn) {

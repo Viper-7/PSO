@@ -19,6 +19,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseBody = '';
 	
 	public $hasInit = false;
+	public $headersSent = false;
 
 	public function getDOM() { 
 		if(isset($this->dom))
@@ -63,6 +64,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	}
 
 	public function readData() {
+
 		if(!empty($this->responseHeaders)) {
 			$content = fread($this->stream, 4096);
 			$this->rawResponse .= $content;
