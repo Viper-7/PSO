@@ -10,7 +10,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	
 	protected $concurrency = 20;
-	protected $spawnRate   = 1;
+	protected $spawnRate   = 2;
 	protected $fetchBodies = true;
 	
 	public function getStreams() {
@@ -18,11 +18,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->close();
 		}
 		
-		$count = min($this->spawnRate, $this->concurrency, count($this->connections)) - count($this->active);
+		$count = min($this->concurrency, count($this->connections)) - count($this->active);
+		$round = 0;
 		
 		foreach($this->connections as $conn) {
 			if(!$count) break;
-
+			if(++$round > $this->spawnRate) break;
+			
 			if(!$conn->hasInit) {
 				if($this->initalizeConnection($conn)) {
 					$count--;
@@ -126,10 +128,10 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		else
 			$conn->requestBody = $conn->contextOptions['http']['content'];
 		
-
 		$context = stream_context_create($conn->contextOptions);
 		$parts = parse_url($conn->requestURI);
-		$url = "tcp://{$parts['host']}:80";
+		$host = isset($parts['host']) ? $parts['host'] : '';
+		$url = "tcp://{$host}:80";
 		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
 		if(!$stream) {
