@@ -133,6 +133,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected function initalizeConnection($conn) {
 		$context = stream_context_create($conn->contextOptions);
+
 		$parts = parse_url($conn->requestURI);
 		$url = "tcp://{$parts['host']}:80";
 		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
@@ -141,31 +142,29 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			return $this->handleError($conn, 'unknown');
 		}
 
-		
+		$conn->stream = $stream;
+		$conn->hasInit = true;
+		$this->active[] = $conn;
+
 		$url = $this->packURL($parts);
 		$host = $parts['host'];
 		unset($parts['scheme'], $parts['host']);
 		
-		$this->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
-		$this->send("Host: {$host}\r\n");
-		$this->send("User-Agent: {$this->userAgent}\r\n");
+		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
+		$conn->send("Host: {$host}\r\n");
+		$conn->send("User-Agent: {$this->userAgent}\r\n");
 		
 		foreach($conn->requestHeaders as $header => $value) {
-			$this->send("{$header}: {$value}\r\n");
+			$conn->send("{$header}: {$value}\r\n");
 		}
 		
-		$this->send("\r\n");
+		$conn->send("\r\n");
 		
 		// request body??
 		
-		$this->send("\r\n");
+		$conn->send("\r\n");
 		
 		$this->requestCount += 1;
-		
-		$conn->stream = $stream;
-		$conn->hasInit = true;
-		
-		$this->active[] = $conn;
 		
 		$this->raiseEvent('Connect', array(), NULL, $conn);
 		$conn->raiseEvent('Connect');
