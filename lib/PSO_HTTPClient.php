@@ -6,7 +6,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $captureRedirects = false;
 	public $active = array();
 	
-	protected $concurrency = 5;
+	public $requestCount = 0;
+	public $statusCount  = array();
+	
+	protected $concurrency = 20;
+	protected $spawnRate   = 1;
 	protected $fetchBodies = true;
 	
 	public function getStreams() {
@@ -14,7 +18,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->close();
 		}
 		
-		$count = min($this->concurrency, count($this->connections)) - count($this->active);
+		$count = min($this->spawnRate, $this->concurrency, count($this->connections)) - count($this->active);
 		
 		foreach($this->connections as $conn) {
 			if(!$count) break;
@@ -48,6 +52,10 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->concurrency = $level;
 	}
 	
+	public function setSpawnRate($rate) {
+		$this->spawnRate = $rate;
+	}
+	
 	public function addTargets($targets, $onResponse=null) {
 		foreach($targets as $target) {
 			$conn = $this->createConnection($target);
@@ -76,6 +84,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	protected function createConnection($target) {
 		$class = static::$connection_class;
 		$conn = new $class(NULL);
+		$conn->pool = $this;
 		
 		$conn->requestURI = $target;
 		
@@ -125,9 +134,14 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	protected function initalizeConnection($conn) {
 		$context = stream_context_create($conn->contextOptions);
 		$stream = @fopen($conn->requestURI, 'r', false, $context);
+		
+		$this->requestCount += 1;
+		
+		if(!$stream) {
+			return $this->handleError($conn, 'unknown');
+		}
 
 		$conn->stream = $stream;
-		$conn->pool = $this;
 		$conn->hasInit = true;
 		
 		$this->active[] = $conn;
@@ -168,7 +182,15 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->disconnect($conn);
 	}
 	
-	public function handleError($conn) {
+	public function handleError($conn, $status=null) {
+		if(!$status)
+			$status = $conn->responseStatusCode;
+		
+		if(!isset($this->statusCount[$status]))
+			$this->statusCount[$status] = 0;
+		
+		$this->statusCount[$status] += 1;
+		
 		$this->raiseEvent('Error', array(), NULL, $conn);
 		$conn->raiseEvent('Error');
 		$this->disconnect($conn);

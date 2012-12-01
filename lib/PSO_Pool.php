@@ -3,7 +3,13 @@ abstract class PSO_Pool {
 	use PSO_EventProvider;
 	
 	public static $connection_class = 'PSO_Connection';
-	public $open = true;
+	
+	public $open 		 = true;
+	
+	public $startTime;
+	public $bytesRead    = 0;
+	public $bytesWritten = 0;
+	
 	protected $connections = array();
 	
 	public function broadcast($data) {
@@ -21,6 +27,22 @@ abstract class PSO_Pool {
 			if($conn->stream == $stream) {
 				return $conn;
 			}
+		}
+	}
+	
+	public function getReadSpeed() {
+		return $this->divideSize($this->bytesRead / (microtime(true) - $this->startTime));
+	}
+	
+	public function getWriteSpeed() {
+		return $this->divideSize($this->bytesWritten / (microtime(true) - $this->startTime));
+	}
+	
+	public function divideSize($bytes) {
+		foreach(array('k','m','g','t','p') as $char) {
+			$bytes /= 1024;
+			if($bytes < 1024)
+				return number_format($bytes, 0) . "{$char}";
 		}
 	}
 	
@@ -50,7 +72,12 @@ abstract class PSO_Pool {
 	}
 	
 	public function readData($conn) {
+		if(!$this->startTime)
+			$this->startTime = microtime(true);
+
 		$data = $conn->readData();
+
+		$this->bytesRead += strlen($data);
 		
 		if($data) {
 			$this->raiseEvent('Data', $data, NULL, $conn);

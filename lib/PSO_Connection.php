@@ -24,6 +24,8 @@ class PSO_Connection {
 		}
 
 		$written = @fwrite($this->stream, $chunk);
+		$this->pool->bytesWritten += $written;
+		
 		if($written === FALSE || $written < strlen($chunk)) {
 			$this->disconnect();
 		}

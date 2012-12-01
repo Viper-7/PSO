@@ -63,9 +63,12 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			unset($this->dom);
 			
 			$this->pool->handlePartial($this);
-
+			
 			if($this->stream && feof($this->stream)) { 
-				return $this->pool->handleResponse($this);
+				$this->pool->handleResponse($this);
+				$meta = stream_get_meta_data($this->stream);
+				
+				return implode("\r\n", $meta['wrapper_data']) . "\r\n" . $this->responseBody;
 			} else {
 				return;
 			}
