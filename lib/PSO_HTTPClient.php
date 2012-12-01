@@ -133,15 +133,25 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected function initalizeConnection($conn) {
 		$context = stream_context_create($conn->contextOptions);
-		$url = 'tcp' . substr($conn->requestURI, 4);
-		$stream = @fopen($url, 'r', false, $context);
+		parse_url($conn->requestURI, $parts);
 		
-		$this->requestCount += 1;
+		$url = "tcp://{$parts['host']}";
+		$stream = @fopen($url, 'r', false, $context);
 		
 		if(!$stream) {
 			return $this->handleError($conn, 'unknown');
 		}
 
+		
+		$url = $this->packURL($parts);
+		$host = $parts['host'];
+		unset($parts['scheme'], $parts['host']);
+		
+		$this->send("{$conn->requestMethod} {$url} HTTP/1.0");
+		$this->send("Host: {$host}\r\n");
+		
+		$this->requestCount += 1;
+		
 		$conn->stream = $stream;
 		$conn->hasInit = true;
 		
@@ -215,7 +225,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		if(isset($base['path']) && isset($added['path'])) {
 			$parsed_url['path'] = rtrim($base['path'], '/') . '/' . ltrim($added['path'], '/');
 		}
+	
+		return $this->packURL($parsed_url);
+	}
 
+	function packURL($parsed_url) {
 		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
 		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
 		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
@@ -226,5 +240,5 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
 		$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
 		return "$scheme$user$pass$host$port$path$query$fragment";
-	} 
+	}
 }
