@@ -59,37 +59,39 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 
 	public function readData() {
 		if(!empty($this->responseHeaders)) {
-			$this->responseBody .= fread($this->stream, 4096);
+			$content = fread($this->stream, 4096);
+			$this->rawResponse .= $content;
+			$this->responseBody .= $content;
 			unset($this->dom);
 			
 			$this->pool->handlePartial($this);
 			
 			if($this->stream && feof($this->stream)) { 
 				$this->pool->handleResponse($this);
-				$meta = stream_get_meta_data($this->stream);
 				
-				return implode("\r\n", $meta['wrapper_data']) . "\r\n" . $this->responseBody;
+				return $this->rawResponse;
+//				return implode("\r\n", $meta['wrapper_data']) . "\r\n" . $this->responseBody;
 			} else {
 				return;
 			}
 		}
 		
-		$meta = stream_get_meta_data($this->stream);
+		$this->rawResponse .= fread($this->stream, 1024);
+		$content = explode("\r\n\r\n", $this->rawResponse, 2);
 		
-		$headers = $meta['wrapper_data'];
+		if(!isset($content[1]))
+			return;
+		
+		$headers = explode("\r\n", $content[0]);
+		$this->responseBody = $content[1];
+		
+		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', array_shift($headers));
 
 		foreach($headers as $header) {
-			if(substr($header, 0, 5) == 'HTTP/') {
-				$status = $header;
-				continue;
-			}
-			
 			list($name, $value) = explode(':', $header, 2) + array('', '');
 			
 			$this->responseHeaders[$name] = trim($value);
 		}
-		
-		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', $status);
 		
 		if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
 			$this->pool->handleHead($this);
