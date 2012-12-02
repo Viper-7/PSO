@@ -131,7 +131,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function addTarget($target) {
-		return $this->createConnection($target);
+		$conns = $this->addTargets(array($target));
+		foreach($conns as $conn) { return $conn; }
 	}
 	
 	public function disconnect($conn) {
@@ -222,7 +223,6 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 		
 		stream_set_read_buffer($stream, 8192);
-		stream_set_blocking($stream, 0);
 		$conn->stream = $stream;
 
 		unset($parts['scheme'], $parts['host']);
@@ -298,8 +298,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->statusCount[$status] += 1;
 		
 		if($conn->errorCount >= $this->retryLimit) {
-			$this->raiseEvent('Error', array(), NULL, $conn);
-			$conn->raiseEvent('Error');
+			$this->raiseEvent('Error', array($status), NULL, $conn);
+			$conn->raiseEvent('Error', array($status));
 			$this->disconnect($conn);
 		} else {
 			$url = $conn->requestURI;

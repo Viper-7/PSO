@@ -92,8 +92,9 @@ $pool->addTargets($urls, function() use (&$content) {
 	}
 });
 
-$pool->onError(function() {
-	var_dump($this->responseStatusCode, $this->sent, $this->rawResponse);
+$pool->onError(function($error) {
+	if($this->responseStatusCode)
+		var_dump($this->sent, $this->rawResponse);
 });
 
 $char = '/';
