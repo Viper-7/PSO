@@ -209,7 +209,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		$this->requestCount += 1;
 		$conn->hasInit = true;
-		$this->active[$conn->remoteIP] = $conn;
+		$this->active[$conn->remoteIP][] = $conn;
 		
 		$this->raiseEvent('Connect', array(), NULL, $conn);
 		$conn->raiseEvent('Connect');
