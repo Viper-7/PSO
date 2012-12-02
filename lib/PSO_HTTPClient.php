@@ -33,7 +33,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 
 		foreach($this->active as $conn) {
-			if(!$conn->stream || !is_resource($conn->stream)) {
+			if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream)) {
 				$conn->disconnect();
 			}
 		}
@@ -133,12 +133,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$host = isset($parts['host']) ? $parts['host'] : '';
 		$url = "tcp://{$host}:80";
 		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
-		stream_set_read_buffer($stream, 8192);
 		
 		if(!$stream) {
 			return $this->handleError($conn, 'unknown');
 		}
 
+		stream_set_read_buffer($stream, 8192);
 		$conn->stream = $stream;
 		$this->connections[] = $conn;
 		
@@ -147,15 +147,16 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected function initalizeConnection($conn) {
 		$parts = parse_url($conn->requestURI);
-		$url = $this->packURL($parts);
 		$host = $parts['host'];
 		unset($parts['scheme'], $parts['host']);
+		$url = $this->packURL($parts);
 		
 		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
 		$conn->send("Host: {$host}\r\n");
 		$conn->send("User-Agent: {$this->userAgent}\r\n");
 		
 		foreach($conn->requestHeaders as $header => $value) {
+			$value = trim($value);
 			$conn->send("{$header}: {$value}\r\n");
 		}
 		
@@ -163,7 +164,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		// request body??
 		
-		$conn->send("\r\n");
+		$conn->send("\r\n\r\n");
 		
 		$this->requestCount += 1;
 		$conn->hasInit = true;

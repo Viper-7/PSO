@@ -24,7 +24,7 @@ $content = array();
 $pool = new PSO_HTTPClient();
 
 $pool->setConcurrency(50);
-$pool->setSpawnRate(2);
+$pool->setSpawnRate(1);
 
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
