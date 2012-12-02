@@ -134,5 +134,5 @@ $total /= 1024;
 $time = number_format($end - $start, 3); 
 $speed = number_format($total / $time, 1);
 $total = number_format($total / 1024, 2);
-echo "{$total} Mb total, took {$time}s ({$speed} K/s)\r\n";
+echo "{$total} Mb total, {$pool->requestCount} requests took {$time}s ({$speed} K/s)\r\n";
 var_dump($pool->statusCount);
