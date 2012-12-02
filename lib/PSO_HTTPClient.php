@@ -44,22 +44,21 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	public function handleTick() {
 		$count = min($this->concurrency, count($this->connections)) - array_sum(array_map('count', $this->active));
-		$round = 0;
-
+		$this->spawnCount = 0;
+		
 		foreach($this->connections as $conn) {
 			if(!$count) break;
-			if($round > $this->spawnRate) break;
+			if($this->spawnCount > $this->spawnRate) break;
 			
 			$ipcount = 0;
 			if(isset($this->active[$conn->remoteIP])) {
 				$ipcount = count($this->active[$conn->remoteIP]);
 			}
 			
-			echo "Round: $round, PerIP: $ipcount\n";
 			if(!$conn->hasInit && $ipcount < $this->connectionsPerIP) {
 				if($this->initalizeConnection($conn)) {
 					$count--;
-					$round++;
+					$this->spawnCount += 1;
 				}
 			}
 		}

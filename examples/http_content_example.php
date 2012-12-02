@@ -109,11 +109,11 @@ $chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
 // Report some status while running
 $pool->onTick(function() use (&$char, $chars) {
 	$char = $chars[$char];
-	$active = count($this->active);
+	$active = array_sum(array_map('count', $this->active));
 	$inactive = count($this->connections) - $active;
 	$speed = $this->getReadSpeed();
 	
-	echo "  {$char}   {$active} Active, {$inactive} Waiting - {$speed}/s        \r";
+	echo "  {$char}   {$this->spawnCount} Spawned, {$active} Active, {$inactive} Waiting - {$speed}/s        \r";
 });
 
 $start = microtime(true);
