@@ -1,7 +1,7 @@
 <?php
 abstract class PSO {
 	protected static $next_poll = 0;
-	protected static $poll_interval = 1;
+	protected static $poll_interval = 0.1;
 	
 	protected static function find_connection($fp, $pools) {
 		foreach($pools as $pool) {
