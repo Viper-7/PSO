@@ -3,13 +3,13 @@ include '../PSO.php';
 
 // Target URLs to scrape
 $urls = array(
+	'http://www.microsoft.com/',
 	'http://codepad.viper-7.com/',
 	'http://www.overclockers.com.au/',
 	'http://www.ausgamers.com.au/',
 	'http://www.news.com.au/',
 	'http://www.google.com/',
 	'http://www.bing.com/',
-	'http://www.microsoft.com/',
 	'http://www.yahoo.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',

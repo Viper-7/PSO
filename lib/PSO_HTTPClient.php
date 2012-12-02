@@ -83,13 +83,15 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		parent::disconnect($conn);
 	}
 	
-	protected function createConnection($target) {
-		$class = static::$connection_class;
-		$conn = new $class(NULL);
+	protected function createConnection($target, $conn=null) {
+		if(!$conn) {
+			$class = static::$connection_class;
+			$conn = new $class(NULL);
+		}
+		
 		$conn->pool = $this;
-		
 		$conn->requestURI = $target;
-		
+
 		$conn->contextOptions = array();
 		$conn->contextOptions['http']['header'] = array();
 		$conn->contextOptions['http']['ignore_errors'] = 1;
@@ -135,8 +137,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
 		if(!$stream) {
-			return $this->handleError($conn, 'unknown');
+			echo "Failed to connect to {$url} for {$conn->requestURI}\r\n";
+			$this->handleError($conn, 'unknown');
+			return $conn;
 		}
+
+		$conn->requestHeaders['Host'] = $host;
+		$conn->requestHeaders['User-Agent'] = $this->userAgent;
 
 		stream_set_read_buffer($stream, 8192);
 		$conn->stream = $stream;
@@ -152,19 +159,22 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$url = $this->packURL($parts);
 		
 		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
-		$conn->send("Host: {$host}\r\n");
-		$conn->send("User-Agent: {$this->userAgent}\r\n");
+
+		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
 		
-		foreach($conn->requestHeaders as $header => $value) {
-			$value = trim($value);
-			$conn->send("{$header}: {$value}\r\n");
+		foreach($conn->requestHeaders as $header => $line) {
+			if(!is_array($line))
+				$line = array($line);
+			
+			foreach($line as $value) {
+				$value = trim($value);
+				$conn->send("{$header}: {$value}\r\n");
+			}
 		}
 		
 		$conn->send("\r\n");
 		
-		// request body??
-		
-		$conn->send("\r\n\r\n");
+		$conn->send($conn->requestBody);
 		
 		$this->requestCount += 1;
 		$conn->hasInit = true;
@@ -197,13 +207,14 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 
 	public function handleRedirect($conn) {
-		$url = $conn->responseHeaders['Location'];
+		$url = $this->joinURL($conn->requestURI, $conn->responseHeaders['Location']);
 		
 		$this->raiseEvent('Redirect', array($url), NULL, $conn);
 		$conn->raiseEvent('Redirect', array($url));
 		
-		$this->addTargets(array($url));
 		$this->disconnect($conn);
+		$conn->hasInit = false;
+		$this->createConnection($url, $conn);
 	}
 	
 	public function handleError($conn, $status=null) {
