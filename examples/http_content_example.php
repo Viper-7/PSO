@@ -3,10 +3,10 @@ include '../PSO.php';
 
 // Target URLs to scrape
 $urls = array(
+	'http://www.microsoft.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
-	'http://www.microsoft.com/',
 	'http://codepad.viper-7.com/',
 	'http://www.overclockers.com.au/',
 	'http://www.ausgamers.com.au/',
@@ -24,13 +24,14 @@ $content = array();
 $pool = new PSO_HTTPClient();
 
 $pool->setConcurrency(200);
-$pool->setSpawnRate(50);
+$pool->setSpawnRate(20);
 
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
 
 $pool->onError(function() {
-	echo "{$this->responseStatusCode} {$this->responseStatus} - {$this->requestURI}";
+	echo "{$this->responseStatusCode} {$this->responseStatus} - {$this->requestURI}\r\n";
+	var_dump($this->sent);
 });
 
 // Add the main page to the queue

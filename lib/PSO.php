@@ -64,7 +64,7 @@ abstract class PSO {
 			
 			if(self::$next_poll < microtime(true)) {
 				foreach($pools as $pool) {
-					$pool->raiseEvent('Tick');
+					$pool->handleTick();
 				}
 				
 				self::$next_poll = microtime(true) + self::$poll_interval;

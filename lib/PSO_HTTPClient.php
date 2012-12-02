@@ -18,20 +18,6 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->close();
 		}
 		
-		$count = min($this->concurrency, count($this->connections)) - count($this->active);
-		$round = 0;
-		
-		foreach($this->connections as $conn) {
-			if(!$count) break;
-			if(++$round > $this->spawnRate) break;
-			
-			if(!$conn->hasInit) {
-				if($this->initalizeConnection($conn)) {
-					$count--;
-				}
-			}
-		}
-
 		foreach($this->active as $conn) {
 			if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream)) {
 				$conn->disconnect();
@@ -48,6 +34,25 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 		
 		return array($read, $write, $except);
+	}
+	
+	public function handleTick() {
+		$count = min($this->concurrency, count($this->connections)) - count($this->active);
+		$round = 0;
+
+		foreach($this->connections as $conn) {
+			if(!$count) break;
+			if($round > $this->spawnRate) break;
+			
+			if(!$conn->hasInit && !isset($this->active[$conn->remoteIP])) {
+				if($this->initalizeConnection($conn)) {
+					$count--;
+					$round++;
+				}
+			}
+		}
+		
+		parent::handleTick();
 	}
 	
 	public function setConcurrency($level) {
@@ -130,23 +135,15 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		else
 			$conn->requestBody = $conn->contextOptions['http']['content'];
 		
-		$context = stream_context_create($conn->contextOptions);
 		$parts = parse_url($conn->requestURI);
 		$host = isset($parts['host']) ? $parts['host'] : '';
-		$url = "tcp://{$host}:80";
-		$stream = @stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
-		if(!$stream) {
-			echo "Failed to connect to {$url} for {$conn->requestURI}\r\n";
-			$this->handleError($conn, 'unknown');
-			return $conn;
-		}
-
+		$ip = gethostbyname($host);
+		$conn->remoteIP = $ip;
+		
 		$conn->requestHeaders['Host'] = $host;
 		$conn->requestHeaders['User-Agent'] = $this->userAgent;
 
-		stream_set_read_buffer($stream, 8192);
-		$conn->stream = $stream;
 		$this->connections[] = $conn;
 		
 		return $conn;
@@ -155,8 +152,22 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	protected function initalizeConnection($conn) {
 		$parts = parse_url($conn->requestURI);
 		$host = $parts['host'];
+
+		$url = "tcp://{$conn->remoteIP}:80";
+		$context = stream_context_create($conn->contextOptions);
+		$stream = stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
+		
+		if(!$stream) {
+			echo "Failed to connect to {$url} for {$conn->requestURI}\r\n";
+			$this->handleError($conn, 'unknown');
+			return $conn;
+		}
+		stream_set_read_buffer($stream, 8192);
+		$conn->stream = $stream;
+
 		unset($parts['scheme'], $parts['host']);
 		$url = $this->packURL($parts);
+		$url = str_replace(' ', '%20', $url);
 		
 		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
 
@@ -174,11 +185,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		$conn->send("\r\n");
 		
-		$conn->send($conn->requestBody);
+		$conn->send($conn->requestBody . "\r\n");
 		
 		$this->requestCount += 1;
 		$conn->hasInit = true;
-		$this->active[] = $conn;
+		$this->active[$conn->remoteIP] = $conn;
 		
 		$this->raiseEvent('Connect', array(), NULL, $conn);
 		$conn->raiseEvent('Connect');

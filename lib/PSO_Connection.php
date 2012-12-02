@@ -9,6 +9,8 @@ class PSO_Connection {
 	
 	protected $outputBuffer = '';
 	
+	public $sent = '';
+	
 	public function readData() {
 		$data = fread($this->stream, static::$chunk_size);
 		return $data;
@@ -24,6 +26,7 @@ class PSO_Connection {
 		}
 
 		$written = @fwrite($this->stream, $chunk);
+		$this->sent .= substr($chunk,0,$written);
 		$this->pool->bytesWritten += $written;
 		
 		if($written === FALSE || $written < strlen($chunk)) {

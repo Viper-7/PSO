@@ -2,13 +2,15 @@
 class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $requestURI;
 	public $contextOptions = array();
+	
+	public $remoteIP;
 
 	public $requestMethod = 'GET';
 	public $requestHeaders = array(
-		'Accept' => '*/*',
+		'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 		'Connection' => 'close',
 		'Accept-Language' => 'en-US,en;q=0.6',
-		'Accept-Encoding' => '',
+		'Accept-Encoding' => 'plain',
 		'Pragma' => 'no-cache',
 		'Cache-Control' => 'no-cache',
 	);

@@ -46,6 +46,10 @@ abstract class PSO_Pool {
 		}
 	}
 	
+	public function handleTick() {
+		$this->raiseEvent('Tick');
+	}
+	
 	public function getStreams() {
 		$read = $write = $except = array();
 		
