@@ -11,7 +11,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected $concurrency = 100;
 	protected $spawnRate   = 10;
-	protected $connectionsPerIP = 2;
+	protected $connectionsPerIP = 4;
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
 	
@@ -43,7 +43,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function handleTick() {
-		$count = min($this->concurrency, count($this->connections)) - count($this->active);
+		$count = min($this->concurrency, count($this->connections)) - array_sum(array_map('count', $this->active));
 		$round = 0;
 
 		foreach($this->connections as $conn) {
@@ -55,6 +55,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 				$ipcount = count($this->active[$conn->remoteIP]);
 			}
 			
+			echo "Round: $round, PerIP: $ipcount\n";
 			if(!$conn->hasInit && $ipcount < $this->connectionsPerIP) {
 				if($this->initalizeConnection($conn)) {
 					$count--;
