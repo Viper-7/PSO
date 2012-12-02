@@ -20,19 +20,23 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->close();
 		}
 		
-		foreach($this->active as $conn) {
-			if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream)) {
-				$conn->disconnect();
+		foreach($this->active as $set) {
+			foreach($set as $conn) {
+				if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream)) {
+					$conn->disconnect();
+				}
 			}
 		}
 
 		$read = $write = $except = array();
-		foreach($this->active as $conn) {
-			$read[] = $conn->stream;
-			$except[] = $conn->stream;
-			
-			if($conn->hasOutput())
-				$write[] = $conn->stream;
+		foreach($this->active as $set) {
+			foreach($set as $conn) {
+				$read[] = $conn->stream;
+				$except[] = $conn->stream;
+				
+				if($conn->hasOutput())
+					$write[] = $conn->stream;
+			}
 		}
 		
 		return array($read, $write, $except);
@@ -93,10 +97,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function disconnect($conn) {
-		$key = array_search($conn, $this->active);
+		$key = array_search($conn, $this->active[$conn->remoteIP]);
 
 		if($key !== FALSE)
-			unset($this->active[$key]);
+			unset($this->active[$conn->remoteIP][$key]);
+			
+		if(empty($this->active[$conn->remoteIP]))
+			unset($this->active[$conn->remoteIP]);
 		
 		parent::disconnect($conn);
 	}
