@@ -4,7 +4,7 @@ abstract class PSO_Pool {
 	
 	public static $connection_class = 'PSO_Connection';
 	public static $next_poll = 0;
-	public static $poll_interval = 0.1;
+	public static $poll_interval = 0.05;
 	
 	public $open 		 = true;
 	

@@ -10,7 +10,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	
 	protected $concurrency = 100;
-	protected $spawnRate   = 2;
+	protected $spawnRate   = 3;
 	protected $connectionsPerIP = 4;
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
@@ -51,7 +51,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$ac = isset($active[$a->remoteIP]) ? count($active[$a->remoteIP]) : 0;
 			$bc = isset($active[$b->remoteIP]) ? count($active[$b->remoteIP]) : 0;
 			if($ac == $bc) return 0;
-			return $ac < $bc ? -1 : 1;
+			return $ac > $bc ? -1 : 1;
 		});
 		
 		foreach($this->connections as $conn) {
