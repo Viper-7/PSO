@@ -21,10 +21,12 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseHTTPVersion;
 	public $responseStatusCode;
 	public $responseStatus;
-	public $responseBody = '';
+	public $responseBody = NULL;
 	
 	public $hasInit = false;
 	public $headersSent = false;
+	
+	public $requestComplete = false;
 
 	public function getDOM() { 
 		if(isset($this->dom))
@@ -83,6 +85,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			$this->pool->handlePartial($this);
 			
 			if($this->stream && feof($this->stream)) { 
+				$this->requestComplete = true;
 				$this->pool->handleResponse($this);
 				
 				return $this->rawResponse;

@@ -9,9 +9,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $requestCount = 0;
 	public $statusCount  = array();
 	
-	protected $concurrency = 20;
+	protected $concurrency = 100;
 	protected $spawnRate   = 10;
+	protected $connectionsPerIP = 2;
 	protected $fetchBodies = true;
+	protected $connectionCache = array();
 	
 	public function getStreams() {
 		if(!$this->connections && !$this->active) {
@@ -44,7 +46,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			if(!$count) break;
 			if($round > $this->spawnRate) break;
 			
-			if(!$conn->hasInit && !isset($this->active[$conn->remoteIP])) {
+			$ipcount = 0;
+			if(isset($this->active[$conn->remoteIP])) {
+				$ipcount = count($this->active[$conn->remoteIP]);
+			}
+			
+			if(!$conn->hasInit && $ipcount < $this->connectionsPerIP) {
 				if($this->initalizeConnection($conn)) {
 					$count--;
 					$round++;
@@ -65,9 +72,15 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	public function addTargets($targets, $onResponse=null) {
 		foreach($targets as $target) {
-			$conn = $this->createConnection($target);
-			$conns[$target] = $conn;
-			if(is_callable($onResponse)) {
+			if(isset($this->connectionCache[$target])) {
+				$conn = $this->connectionCache[$target];
+				$conn->onResponse($onResponse);
+				if($conn->requestComplete) 
+					$conn->raiseEvent('Response');
+				$conns[$target] = $conn;
+			} else {
+				$conn = $this->createConnection($target);
+				$conns[$target] = $conn;
 				$conn->onResponse($onResponse);
 			}
 		}
