@@ -92,6 +92,11 @@ $pool->addTargets($urls, function() use (&$content) {
 	}
 });
 
+$pool->onRetry(function($error) {
+	if($this->responseStatusCode)
+		var_dump($this->sent, $this->rawResponse);
+});
+
 $pool->onError(function($error) {
 	if($this->responseStatusCode)
 		var_dump($this->sent, $this->rawResponse);

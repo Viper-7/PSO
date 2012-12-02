@@ -308,6 +308,9 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$conn->errorCount += 1;
 			$this->retryCount += 1;
 			
+			$this->raiseEvent('Retry', array($status), NULL, $conn);
+			$conn->raiseEvent('Retry', array($status));
+
 			$this->disconnect($conn);
 			$conn->hasInit = false;
 			$this->createConnection($url, $conn);
