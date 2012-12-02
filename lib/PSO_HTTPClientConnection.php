@@ -24,10 +24,13 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseStatus;
 	public $responseBody = NULL;
 	
+	public $errorCount = 0;
+	
 	public $hasInit = false;
 	public $headersSent = false;
 	
 	public $requestComplete = false;
+	public $rawResponse = '';
 
 	public function getDOM() { 
 		if(isset($this->dom))

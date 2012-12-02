@@ -7,12 +7,14 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $active = array();
 	
 	public $requestCount = 0;
+	public $retryCount = 0;
 	public $statusCount  = array();
 	
 	protected $concurrency = 100;
 	protected $spawnRate   = 10;
 	protected $resolveRate = 2;
 	protected $connectionsPerIP = 3;
+	protected $retryLimit = 3;
 	
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
@@ -294,9 +296,19 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		$this->statusCount[$status] += 1;
 		
-		$this->raiseEvent('Error', array(), NULL, $conn);
-		$conn->raiseEvent('Error');
-		$this->disconnect($conn);
+		if($conn->errorCount > $this->retryLimit) {
+			$this->raiseEvent('Error', array(), NULL, $conn);
+			$conn->raiseEvent('Error');
+			$this->disconnect($conn);
+		} else {
+			$url = $conn->requestURI;
+			$conn->errorCount += 1;
+			$this->retryCount += 1;
+			
+			$this->disconnect($conn);
+			$conn->hasInit = false;
+			$this->createConnection($url, $conn);
+		}
 	}
 	
 	public function joinURL($base, $added) {

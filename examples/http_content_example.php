@@ -10,7 +10,6 @@ $urls = array(
 	'http://www.news.com.au/',
 	'http://www.google.com/',
 	'http://www.bing.com/',
-	'http://www.yahoo.com/',
 	'http://www.slashdot.org/',
 	'http://www.mozilla.org/',
 	'http://www.wikipedia.org/',
@@ -95,7 +94,6 @@ $pool->addTargets($urls, function() use (&$content) {
 $char = '/';
 $chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
 
-// Report some status while running
 $pool->onTick(function() use (&$char, $chars) {
 	$char = $chars[$char];
 	$active = array_sum(array_map('count', $this->active));
@@ -135,4 +133,5 @@ $time = number_format($end - $start, 3);
 $speed = number_format($total / $time, 1);
 $total = number_format($total / 1024, 2);
 echo "{$total} Mb total, {$pool->requestCount} requests took {$time}s ({$speed} K/s)\r\n";
+echo "Errors: ";
 var_dump($pool->statusCount);
