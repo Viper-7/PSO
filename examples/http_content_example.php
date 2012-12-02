@@ -22,9 +22,6 @@ $urls = array(
 $content = array();
 $pool = new PSO_HTTPClient();
 
-$pool->setConcurrency(100);
-$pool->setSpawnRate(10);
-
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
 

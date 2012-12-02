@@ -48,7 +48,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		foreach($this->connections as $conn) {
 			if(!$count) break;
-			if($this->spawnCount > $this->spawnRate) break;
+			if($this->spawnCount >= $this->spawnRate) break;
 			
 			$ipcount = 0;
 			if(isset($this->active[$conn->remoteIP])) {
