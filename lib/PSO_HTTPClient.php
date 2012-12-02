@@ -112,18 +112,20 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->spawnRate = $rate;
 	}
 	
-	public function addTargets($targets, $onResponse=null) {
+	public function addTargets($targets, $onResponse = null) {
 		foreach($targets as $target) {
 			if(isset($this->connectionCache[$target])) {
 				$conn = $this->connectionCache[$target];
-				$conn->onResponse($onResponse);
+				if($onResponse)
+					$conn->onResponse($onResponse);
 				if($conn->requestComplete) 
 					$conn->raiseEvent('Response');
 				$conns[$target] = $conn;
 			} else {
 				$conn = $this->createConnection($target);
 				$conns[$target] = $conn;
-				$conn->onResponse($onResponse);
+				if($onResponse)
+					$conn->onResponse($onResponse);
 			}
 		}
 		
