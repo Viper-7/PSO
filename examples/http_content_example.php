@@ -3,6 +3,9 @@ include '../PSO.php';
 
 // Target URLs to scrape
 $urls = array(
+	'http://www.amazon.com/',
+	'http://www.rackspace.com/',
+	'http://www.youtube.com/',
 	'http://www.microsoft.com/',
 	'http://codepad.viper-7.com/',
 	'http://www.overclockers.com.au/',
@@ -11,9 +14,6 @@ $urls = array(
 	'http://www.google.com/',
 	'http://www.bing.com/',
 	'http://www.yahoo.com/',
-	'http://www.amazon.com/',
-	'http://www.rackspace.com/',
-	'http://www.youtube.com/',
 	'http://www.slashdot.org/',
 	'http://www.mozilla.org/',
 	'http://www.wikipedia.org/',
@@ -28,6 +28,10 @@ $pool->setSpawnRate(50);
 
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
+
+$pool->onError(function() {
+	var_dump($this->responseStatus, $this->requestURI);
+});
 
 // Add the main page to the queue
 $pool->addTargets($urls, function() use (&$content) {

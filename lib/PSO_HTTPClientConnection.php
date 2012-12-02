@@ -5,9 +5,12 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 
 	public $requestMethod = 'GET';
 	public $requestHeaders = array(
-		'Accept' => 'text/html',
+		'Accept' => '*/*',
 		'Connection' => 'close',
 		'Accept-Language' => 'en-US,en;q=0.6',
+		'Accept-Encoding' => '',
+		'Pragma' => 'no-cache',
+		'Cache-Control' => 'no-cache',
 	);
 	
 	public $requestBody;
@@ -29,7 +32,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		$olderr = libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
 
-		if(!$this->responseBody)
+		if(!trim($this->responseBody))
 			return $dom;
 		
 		$dom->loadHTML($this->responseBody);
