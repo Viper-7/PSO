@@ -9,7 +9,6 @@ $urls = array(
 	'http://www.youtube.com/',
 	'http://codepad.viper-7.com/',
 	'http://www.overclockers.com.au/',
-	'http://www.ausgamers.com.au/',
 	'http://www.news.com.au/',
 	'http://www.google.com/',
 	'http://www.bing.com/',
@@ -28,11 +27,6 @@ $pool->setSpawnRate(10);
 
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
-
-$pool->onError(function() {
-	echo "{$this->responseStatusCode} {$this->responseStatus} - {$this->requestURI}\r\n";
-	var_dump($this->sent);
-});
 
 // Add the main page to the queue
 $pool->addTargets($urls, function() use (&$content) {
@@ -105,16 +99,16 @@ $pool->addTargets($urls, function() use (&$content) {
 
 $char = '/';
 $chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
-echo "\r\n";
 
 // Report some status while running
 $pool->onTick(function() use (&$char, $chars) {
 	$char = $chars[$char];
 	$active = array_sum(array_map('count', $this->active));
 	$inactive = count($this->connections) - $active;
+	$ipcount = count($this->active);
 	$speed = $this->getReadSpeed();
 	
-	echo "\r{$char}   {$this->spawnCount} Spawned, {$active} Active, {$inactive} Waiting - {$speed}/s        ";
+	echo "  {$char}   {$active} Connections to {$ipcount} Domains, {$this->spawnCount} New, {$inactive} Queued - {$speed}/s        \r";
 });
 
 $start = microtime(true);
