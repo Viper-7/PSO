@@ -45,6 +45,9 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public function handleTick() {
 		parent::handleTick();
 
+		if(!$this->connections)
+			return;
+		
 		if(array_sum(array_map('count', $this->active)) >= $this->concurrency)
 			return;
 		
@@ -188,7 +191,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->handleError($conn, 'unknown');
 			return $conn;
 		}
-		stream_set_read_buffer($stream, 8192);
+		//stream_set_read_buffer($stream, 8192);
+		stream_set_blocking($stream, 0);
 		$conn->stream = $stream;
 
 		unset($parts['scheme'], $parts['host']);

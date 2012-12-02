@@ -7,8 +7,6 @@ $urls = array(
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
-	'http://codepad.viper-7.com/',
-	'http://www.overclockers.com.au/',
 	'http://www.news.com.au/',
 	'http://www.google.com/',
 	'http://www.bing.com/',
