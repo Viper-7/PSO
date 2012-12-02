@@ -1,8 +1,5 @@
 <?php
 abstract class PSO {
-	protected static $next_poll = 0;
-	protected static $poll_interval = 0.1;
-	
 	protected static function find_connection($fp, $pools) {
 		foreach($pools as $pool) {
 			if($conn = $pool->findConnection($fp)) {
@@ -35,7 +32,7 @@ abstract class PSO {
 			// Hackish fix to catch process closure, leave the process handle in the read array until now
 			$read = array_filter($read, function($stream) { return get_resource_type($stream) != 'process'; });
 			
-			$wait = self::$next_poll - microtime(true);
+			$wait = PSO_Pool::$next_poll - microtime(true);
 			if($wait < 0) $wait = 0;
 			$wait_s = floor($wait);
 			$wait_us = floor(($wait - $wait_s) * 1000000);
@@ -62,12 +59,8 @@ abstract class PSO {
 			}
 			
 			
-			if(self::$next_poll < microtime(true)) {
-				foreach($pools as $pool) {
-					$pool->handleTick();
-				}
-				
-				self::$next_poll = microtime(true) + self::$poll_interval;
+			foreach($pools as $pool) {
+				$pool->handleTick();
 			}
 		}
 	}

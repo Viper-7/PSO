@@ -3,6 +3,8 @@ abstract class PSO_Pool {
 	use PSO_EventProvider;
 	
 	public static $connection_class = 'PSO_Connection';
+	public static $next_poll = 0;
+	public static $poll_interval = 0.1;
 	
 	public $open 		 = true;
 	
@@ -47,7 +49,10 @@ abstract class PSO_Pool {
 	}
 	
 	public function handleTick() {
-		$this->raiseEvent('Tick');
+		if(self::$next_poll < microtime(true)) {
+			$this->raiseEvent('Tick');
+			self::$next_poll = microtime(true) + self::$poll_interval;
+		}
 	}
 	
 	public function getStreams() {
