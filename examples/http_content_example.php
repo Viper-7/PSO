@@ -93,8 +93,7 @@ $pool->addTargets($urls, function() use (&$content) {
 });
 
 $pool->onError(function() {
-	if(is_numeric($this->responseStatusCode))
-		var_dump($this->sent, $this->rawResponse);
+	var_dump($this->responseStatusCode, $this->sent, $this->rawResponse);
 });
 
 $char = '/';
