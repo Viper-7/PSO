@@ -105,6 +105,7 @@ $pool->addTargets($urls, function() use (&$content) {
 
 $char = '/';
 $chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
+echo "\r\n";
 
 // Report some status while running
 $pool->onTick(function() use (&$char, $chars) {
@@ -113,7 +114,7 @@ $pool->onTick(function() use (&$char, $chars) {
 	$inactive = count($this->connections) - $active;
 	$speed = $this->getReadSpeed();
 	
-	echo "  {$char}   {$this->spawnCount} Spawned, {$active} Active, {$inactive} Waiting - {$speed}/s        \r";
+	echo "\r{$char}   {$this->spawnCount} Spawned, {$active} Active, {$inactive} Waiting - {$speed}/s        ";
 });
 
 $start = microtime(true);
