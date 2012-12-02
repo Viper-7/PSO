@@ -30,7 +30,7 @@ $pool->setSpawnRate(50);
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
 
 $pool->onError(function() {
-	var_dump($this->responseStatus, $this->requestURI);
+	echo "{$this->responseStatusCode} {$this->responseStatus} - {$this->requestURI}";
 });
 
 // Add the main page to the queue

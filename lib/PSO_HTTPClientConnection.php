@@ -99,7 +99,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		$headers = explode("\r\n", $content[0]);
 		$this->responseBody = $content[1];
 		
-		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', array_shift($headers));
+		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', array_shift($headers), 3);
 
 		foreach($headers as $header) {
 			list($name, $value) = explode(':', $header, 2) + array('', '');
