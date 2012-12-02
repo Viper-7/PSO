@@ -23,8 +23,8 @@ $urls = array(
 $content = array();
 $pool = new PSO_HTTPClient();
 
-$pool->setConcurrency(50);
-$pool->setSpawnRate(1);
+$pool->setConcurrency(100);
+$pool->setSpawnRate(20);
 
 // Set the user agent so remote sites don't think we're a bot
 $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0';
@@ -98,14 +98,17 @@ $pool->addTargets($urls, function() use (&$content) {
 	}
 });
 
+$char = '/';
+$chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
 
 // Report some status while running
-$pool->onTick(function() {
+$pool->onTick(function() use ($char, $chars) {
+	$char = $chars[$char];
 	$active = count($this->active);
 	$inactive = count($this->connections) - $active;
 	$speed = $this->getReadSpeed();
 	
-	echo "  {$active} Active, {$inactive} Waiting - {$speed}/s        \r";
+	echo "  {$char}   {$active} Active, {$inactive} Waiting - {$speed}/s        \r";
 });
 
 $start = microtime(true);

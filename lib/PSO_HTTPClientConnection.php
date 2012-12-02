@@ -64,7 +64,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	}
 
 	public function readData() {
-
+		
 		if(!empty($this->responseHeaders)) {
 			$content = fread($this->stream, 4096);
 			$this->rawResponse .= $content;
