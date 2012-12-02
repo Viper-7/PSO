@@ -105,7 +105,7 @@ $pool->onTick(function() use (&$char, $chars) {
 	$ipcount = count($this->active);
 	$speed = $this->getReadSpeed();
 	
-	echo "  {$char}   {$active} Connections to {$ipcount} Domains, {$this->spawnCount} New, {$inactive} Queued - {$speed}/s        \r";
+	echo "  {$char}   {$active} Connections to {$ipcount} Domains, {$inactive} Queued - {$speed}/s        \r";
 });
 
 $start = microtime(true);

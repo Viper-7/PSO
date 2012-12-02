@@ -10,7 +10,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	
 	protected $concurrency = 100;
-	protected $spawnRate   = 3;
+	protected $spawnRate   = 2;
 	protected $connectionsPerIP = 4;
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
@@ -43,35 +43,33 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function handleTick() {
-		$count = min($this->concurrency, count($this->connections)) - array_sum(array_map('count', $this->active));
-		$this->spawnCount = 0;
-		$active = $this->active;
+		parent::handleTick();
+
+		if(array_sum(array_map('count', $this->active)) >= $this->concurrency)
+			return;
 		
-		usort($this->connections, function($a, $b) use ($active) {
-			$ac = isset($active[$a->remoteIP]) ? count($active[$a->remoteIP]) : 0;
-			$bc = isset($active[$b->remoteIP]) ? count($active[$b->remoteIP]) : 0;
-			if($ac == $bc) return 0;
-			return $ac > $bc ? -1 : 1;
-		});
+		foreach($this->connections as $key => $conn) {
+			if(isset($this->active[$conn->remoteIP]))
+				$counts[$key] = count($this->active[$conn->remoteIP]);
+			else
+				$counts[$key] = 0;
+		}
 		
-		foreach($this->connections as $conn) {
-			if($this->spawnCount >= $this->spawnRate) break;
-			if(!$count) break;
-			
-			$ipcount = 0;
-			if(isset($this->active[$conn->remoteIP])) {
-				$ipcount = count($this->active[$conn->remoteIP]);
-			}
-			
-			if(!$conn->hasInit && $ipcount < $this->connectionsPerIP) {
+		arsort($counts);
+		$counts = array_diff($counts, array($this->connectionsPerIP));
+		$spawnCount = 0;
+		
+		foreach($counts as $key => $count) {
+			$conn = $this->connections[$key];
+
+			if(!$conn->hasInit) {
 				if($this->initalizeConnection($conn)) {
-					$count--;
-					$this->spawnCount += 1;
+					$spawnCount++;
+					if($spawnCount >= $this->spawnRate)
+						return;
 				}
 			}
 		}
-		
-		parent::handleTick();
 	}
 	
 	public function setConcurrency($level) {
