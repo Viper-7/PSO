@@ -3,6 +3,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $requestURI;
 	public $contextOptions = array();
 	
+	public $remoteHost;
 	public $remoteIP;
 
 	public $requestMethod = 'GET';

@@ -11,6 +11,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected $concurrency = 100;
 	protected $spawnRate   = 2;
+	protected $resolveRate = 2;
 	protected $connectionsPerIP = 2;
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
@@ -51,7 +52,23 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		if(array_sum(array_map('count', $this->active)) >= $this->concurrency)
 			return;
 		
+		$resolveCount = 0;
+		
 		foreach($this->connections as $key => $conn) {
+			if(!$conn->remoteIP) {
+				$ip = @gethostbyname($conn->remoteHost);
+				$conn->remoteIP = $ip;
+
+				if(!$ip) {
+					$this->handleError($conn, 'DNS');
+					continue;
+				}
+
+				$resolveCount++;
+				if($resolveCount > $this->resolveRate)
+					break;
+			}
+			
 			if(isset($this->active[$conn->remoteIP]))
 				$counts[$key] = count($this->active[$conn->remoteIP]);
 			else
@@ -106,13 +123,15 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function disconnect($conn) {
-		$key = array_search($conn, $this->active[$conn->remoteIP]);
+		if(isset($this->active[$conn->remoteIP])) {
+			$key = array_search($conn, $this->active[$conn->remoteIP]);
 
-		if($key !== FALSE)
-			unset($this->active[$conn->remoteIP][$key]);
-			
-		if(empty($this->active[$conn->remoteIP]))
-			unset($this->active[$conn->remoteIP]);
+			if($key !== FALSE)
+				unset($this->active[$conn->remoteIP][$key]);
+				
+			if(empty($this->active[$conn->remoteIP]))
+				unset($this->active[$conn->remoteIP]);
+		}
 		
 		parent::disconnect($conn);
 	}
@@ -166,14 +185,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		$parts = parse_url($conn->requestURI);
 		$host = isset($parts['host']) ? $parts['host'] : '';
-		
-		$ip = @gethostbyname($host);
-		$conn->remoteIP = $ip;
-		
-		if(!$ip) {
-			$this->handleError($conn, 'DNS');
-			return $conn;
-		}
+		$conn->remoteHost = $host;
 		
 		$conn->requestHeaders['Host'] = $host;
 		$conn->requestHeaders['User-Agent'] = $this->userAgent;
