@@ -4,7 +4,7 @@ include '../PSO.php';
 // Target URLs to scrape
 $urls = array(
 	'http://codepad.viper-7.com/',
-/*	'http://www.microsoft.com/',
+	'http://www.microsoft.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
@@ -14,7 +14,7 @@ $urls = array(
 	'http://www.slashdot.org/',
 	'http://www.mozilla.org/',
 	'http://www.wikipedia.org/',
-	'http://www.php.net/'*/
+	'http://www.php.net/'
 );
 
 $content = array();
