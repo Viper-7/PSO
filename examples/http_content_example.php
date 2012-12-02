@@ -3,6 +3,7 @@ include '../PSO.php';
 
 // Target URLs to scrape
 $urls = array(
+	'http://www.codepad.viper-7.com/',
 	'http://www.microsoft.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
@@ -89,6 +90,11 @@ $pool->addTargets($urls, function() use (&$content) {
 			});
 		}
 	}
+});
+
+$pool->onError(function() {
+	if(is_numeric($this->responseStatusCode))
+		var_dump($this->sent, $this->rawResponse);
 });
 
 $char = '/';

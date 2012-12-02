@@ -71,12 +71,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 					$resolveCount++;
 				}
 				
-				$conn->remoteIP = $ip;
-
-				if(!$ip) {
+				if($ip == $conn->remoteHost) {
 					$this->handleError($conn, 'DNS');
 					continue;
 				}
+				
+				$conn->remoteIP = $ip;
 			}
 			
 			if(isset($this->active[$conn->remoteIP]))
@@ -213,6 +213,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 
 		$url = "tcp://{$conn->remoteIP}:80";
 		$context = stream_context_create($conn->contextOptions);
+
 		$stream = stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
 		if(!$stream) {
@@ -296,7 +297,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		$this->statusCount[$status] += 1;
 		
-		if($conn->errorCount > $this->retryLimit) {
+		if($conn->errorCount >= $this->retryLimit) {
 			$this->raiseEvent('Error', array(), NULL, $conn);
 			$conn->raiseEvent('Error');
 			$this->disconnect($conn);
