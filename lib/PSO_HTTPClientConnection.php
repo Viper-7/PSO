@@ -28,6 +28,10 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		libxml_clear_errors();
 		$olderr = libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
+
+		if(!$this->responseBody)
+			return $dom;
+		
 		$dom->loadHTML($this->responseBody);
 		$errors = libxml_get_errors();
 		libxml_use_internal_errors($olderr);
