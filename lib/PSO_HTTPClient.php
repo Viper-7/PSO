@@ -11,9 +11,9 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	
 	protected $concurrency = 100;
-	protected $spawnRate   = 10;
-	protected $resolveRate = 2;
-	protected $connectionsPerIP = 3;
+	protected $spawnRate   = 12;
+	protected $resolveRate = 3;
+	protected $connectionsPerIP = 4;
 	protected $retryLimit = 2;
 	
 	protected $fetchBodies = true;
