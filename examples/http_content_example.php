@@ -102,7 +102,7 @@ $char = '/';
 $chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
 
 // Report some status while running
-$pool->onTick(function() use ($char, $chars) {
+$pool->onTick(function() use (&$char, $chars) {
 	$char = $chars[$char];
 	$active = count($this->active);
 	$inactive = count($this->connections) - $active;
