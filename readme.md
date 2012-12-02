@@ -1,4 +1,4 @@
-PHP Stream Objects v0.4.8
+PHP Stream Objects v0.4.9
 =========================
 
 An event driven, concurrent, object oriented library to encapsulate PHP stream functionality.
