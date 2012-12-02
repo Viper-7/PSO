@@ -63,6 +63,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 				} else {
 					$ip = @gethostbyname($conn->remoteHost);
 					$this->dnsCache[$conn->remoteHost] = $ip;
+					$resolveCount++;
 				}
 				
 				$conn->remoteIP = $ip;
@@ -72,8 +73,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 					continue;
 				}
 
-				$resolveCount++;
-				if($resolveCount > $this->resolveRate)
+				if($resolveCount >= $this->resolveRate)
 					break;
 			}
 			
