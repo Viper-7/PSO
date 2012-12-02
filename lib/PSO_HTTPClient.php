@@ -11,7 +11,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected $concurrency = 100;
 	protected $spawnRate   = 2;
-	protected $connectionsPerIP = 4;
+	protected $connectionsPerIP = 2;
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
 	
@@ -167,8 +167,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$parts = parse_url($conn->requestURI);
 		$host = isset($parts['host']) ? $parts['host'] : '';
 		
-		$ip = gethostbyname($host);
+		$ip = @gethostbyname($host);
 		$conn->remoteIP = $ip;
+		
+		if(!$ip) {
+			$this->handleError($conn, 'DNS');
+			return $conn;
+		}
 		
 		$conn->requestHeaders['Host'] = $host;
 		$conn->requestHeaders['User-Agent'] = $this->userAgent;
@@ -187,8 +192,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$stream = stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
 		
 		if(!$stream) {
-			echo "Failed to connect to {$url} for {$conn->requestURI}\r\n";
-			$this->handleError($conn, 'unknown');
+			$this->handleError($conn, 'Socket');
 			return $conn;
 		}
 		
