@@ -57,6 +57,9 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$resolveCount = 0;
 		
 		foreach($this->connections as $key => $conn) {
+			if($resolveCount >= $this->resolveRate)
+				break;
+			
 			if(!$conn->remoteIP) {
 				if(isset($this->dnsCache[$conn->remoteHost])) {
 					$ip = $this->dnsCache[$conn->remoteHost];
@@ -72,9 +75,6 @@ class PSO_HTTPClient extends PSO_ClientPool {
 					$this->handleError($conn, 'DNS');
 					continue;
 				}
-
-				if($resolveCount >= $this->resolveRate)
-					break;
 			}
 			
 			if(isset($this->active[$conn->remoteIP]))
