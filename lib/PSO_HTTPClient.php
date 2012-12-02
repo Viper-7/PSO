@@ -10,11 +10,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	
 	protected $concurrency = 100;
-	protected $spawnRate   = 2;
-	protected $resolveRate = 2;
+	protected $spawnRate   = 1;
+	protected $resolveRate = 1;
 	protected $connectionsPerIP = 2;
+	
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
+	protected $dnsCache = array();
 	
 	public function getStreams() {
 		if(!$this->connections && !$this->active) {
@@ -56,7 +58,13 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		foreach($this->connections as $key => $conn) {
 			if(!$conn->remoteIP) {
-				$ip = @gethostbyname($conn->remoteHost);
+				if(isset($this->dnsCache[$conn->remoteHost])) {
+					$ip = $this->dnsCache[$conn->remoteHost];
+				} else {
+					$ip = @gethostbyname($conn->remoteHost);
+					$this->dnsCache[$conn->remoteHost] = $ip;
+				}
+				
 				$conn->remoteIP = $ip;
 
 				if(!$ip) {
