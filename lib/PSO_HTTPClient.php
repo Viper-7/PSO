@@ -283,8 +283,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public function handleRedirect($conn) {
 		$conn->requestURI = $this->joinURL($conn->requestURI, $conn->responseHeaders['Location']);
 		
-		$this->raiseEvent('Redirect', array($url), NULL, $conn);
-		$conn->raiseEvent('Redirect', array($url));
+		$this->raiseEvent('Redirect', array($conn->requestURI), NULL, $conn);
+		$conn->raiseEvent('Redirect', array($conn->requestURI));
 		
 		$this->restartConnection($conn);
 	}
