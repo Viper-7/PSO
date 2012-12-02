@@ -3,8 +3,8 @@ include '../PSO.php';
 
 // Target URLs to scrape
 $urls = array(
-	'http://www.codepad.viper-7.com/',
-	'http://www.microsoft.com/',
+	'http://codepad.viper-7.com/',
+/*	'http://www.microsoft.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
@@ -14,7 +14,7 @@ $urls = array(
 	'http://www.slashdot.org/',
 	'http://www.mozilla.org/',
 	'http://www.wikipedia.org/',
-	'http://www.php.net/'
+	'http://www.php.net/'*/
 );
 
 $content = array();
@@ -90,16 +90,6 @@ $pool->addTargets($urls, function() use (&$content) {
 			});
 		}
 	}
-});
-
-$pool->onRetry(function($error) {
-	if($this->responseStatusCode)
-		var_dump($this->sent, $this->rawResponse);
-});
-
-$pool->onError(function($error) {
-	if($this->responseStatusCode)
-		var_dump($this->sent, $this->rawResponse);
 });
 
 $char = '/';

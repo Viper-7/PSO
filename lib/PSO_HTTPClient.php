@@ -57,6 +57,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			return;
 		
 		$resolveCount = 0;
+		$counts = array();
 		
 		foreach($this->connections as $key => $conn) {
 			if($resolveCount >= $this->resolveRate)
@@ -264,14 +265,14 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$conn->raiseEvent('Headers');
 		
 		if(!$this->fetchBodies) {
-			$this->disconnect($conn);
+			$conn->disconnect();
 		}
 	}
 	
 	public function handleResponse($conn) {
 		$this->raiseEvent('Response', array(), NULL, $conn);
 		$conn->raiseEvent('Response');
-		$this->disconnect($conn);
+		$conn->disconnect();
 	}
 	
 	public function handlePartial($conn) {
@@ -280,12 +281,20 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 
 	public function handleRedirect($conn) {
-		$url = $this->joinURL($conn->requestURI, $conn->responseHeaders['Location']);
+		$conn->requestURI = $this->joinURL($conn->requestURI, $conn->responseHeaders['Location']);
 		
 		$this->raiseEvent('Redirect', array($url), NULL, $conn);
 		$conn->raiseEvent('Redirect', array($url));
 		
-		$this->disconnect($conn);
+		$this->restartConnection($conn);
+	}
+	
+	public function restartConnection($conn) {
+		$url = $conn->requestURI;
+		$conn->disconnect();
+		$conn->responseHeaders = array();
+		$conn->rawResponse = '';
+		$conn->requestComplete = false;
 		$conn->hasInit = false;
 		$this->createConnection($url, $conn);
 	}
@@ -302,7 +311,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		if($conn->errorCount >= $this->retryLimit) {
 			$this->raiseEvent('Error', array($status), NULL, $conn);
 			$conn->raiseEvent('Error', array($status));
-			$this->disconnect($conn);
+			$conn->disconnect();
 		} else {
 			$url = $conn->requestURI;
 			$conn->errorCount += 1;
@@ -311,9 +320,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$this->raiseEvent('Retry', array($status), NULL, $conn);
 			$conn->raiseEvent('Retry', array($status));
 
-			$this->disconnect($conn);
-			$conn->hasInit = false;
-			$this->createConnection($url, $conn);
+			$this->restartConnection($conn);
 		}
 	}
 	
