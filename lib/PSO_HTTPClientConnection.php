@@ -25,6 +25,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $responseBody = NULL;
 	
 	public $errorCount = 0;
+	public $redirectCount = 0;
 	
 	public $hasInit = false;
 	public $headersSent = false;
@@ -79,7 +80,6 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	}
 
 	public function readData() {
-		
 		if(!empty($this->responseHeaders)) {
 			$content = fread($this->stream, 4096);
 			$this->rawResponse .= $content;
@@ -91,9 +91,8 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			if($this->stream && feof($this->stream)) { 
 				$this->requestComplete = true;
 				$this->pool->handleResponse($this);
-				
+
 				return $this->rawResponse;
-//				return implode("\r\n", $meta['wrapper_data']) . "\r\n" . $this->responseBody;
 			} else {
 				return;
 			}
@@ -124,8 +123,53 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			$this->pool->handleError($this);
 		}
 	}
+	
+	public function getMediaURL($added, $base=null) {
+		if(is_null($base)) {
+			$base = $this->requestURI;
+			
+			$dom = $this->getDOM();
+			
+			if($dom) {
+				foreach($dom->getElementsByTagName('base') as $basetag) {
+					if($newbase = $basetag->getAttribute('href')) {
+						$base = $newbase;
+					}
+				}
+			}
+		}
+		
+		$base = parse_url($base);
+		$added = parse_url($added);
 
-	public function joinURL($base, $added) {
-		return $this->pool->joinURL($base, $added);
+		if(isset($base['fragment']))
+			unset($base['fragment']);
+		
+		if(isset($base['query']) && isset($added['path']) && !isset($added['query']))
+			unset($base['query']);
+		
+		if(isset($added['path']) && $added['path'][0] == '/')
+			unset($base['path']);
+		
+		$parsed_url = $added + $base;
+		
+		if(isset($base['path']) && isset($added['path'])) {
+			$parsed_url['path'] = rtrim($base['path'], '/') . '/' . ltrim($added['path'], '/');
+		}
+	
+		return $this->packURL($parsed_url);
+	}
+
+	function packURL($parsed_url) {
+		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+		$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+		$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+		$pass     = ($user || $pass) ? "$pass@" : '';
+		$path     = isset($parsed_url['path']) ? '/' . ltrim($parsed_url['path'], '/') : '';
+		$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+		$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+		return "$scheme$user$pass$host$port$path$query$fragment";
 	}
 }

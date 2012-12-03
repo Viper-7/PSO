@@ -6,10 +6,9 @@ class PSO_Connection {
 	
 	public $pool;
 	public $stream;
+	public $sent = '';
 	
 	protected $outputBuffer = '';
-	
-	public $sent = '';
 	
 	public function readData() {
 		$data = fread($this->stream, static::$chunk_size);
@@ -42,14 +41,16 @@ class PSO_Connection {
 		return $this->outputBuffer != '';
 	}
 	
-	public function disconnect() {
-		// If the connection is still active, recurse to drain the buffer before disconnecting
-		if(is_resource($this->stream) && $this->outputBuffer) {
-			$client = $this;
-			return $this->pool->onTick(function() use ($client) {
-				$client->disconnect();
-				return 'unregister';
-			});
+	public function disconnect($force = false) {
+		if(!$force) {
+			// If the connection is still active, recurse to drain the buffer before disconnecting
+			if(is_resource($this->stream) && $this->outputBuffer) {
+				$client = $this;
+				return $this->pool->onTick(function() use ($client) {
+					$client->disconnect();
+					return 'unregister';
+				});
+			}
 		}
 		
 		$this->pool->disconnect($this);

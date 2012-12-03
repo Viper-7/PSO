@@ -33,19 +33,11 @@ abstract class PSO_Pool {
 	}
 	
 	public function getReadSpeed() {
-		return $this->divideSize($this->bytesRead / (microtime(true) - $this->startTime));
+		return PSO::divideSize($this->bytesRead / (microtime(true) - $this->startTime));
 	}
 	
 	public function getWriteSpeed() {
-		return $this->divideSize($this->bytesWritten / (microtime(true) - $this->startTime));
-	}
-	
-	public function divideSize($bytes) {
-		foreach(array('k','m','g','t','p') as $char) {
-			$bytes /= 1024;
-			if($bytes < 1024)
-				return number_format($bytes, 0) . "{$char}";
-		}
+		return PSO::divideSize($this->bytesWritten / (microtime(true) - $this->startTime));
 	}
 	
 	public function handleTick() {

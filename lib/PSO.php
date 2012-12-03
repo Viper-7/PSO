@@ -7,7 +7,15 @@ abstract class PSO {
 			}
 		}
 	}
-
+	
+	public static function divideSize($bytes, $precision = 0) {
+		foreach(array('k','m','g','t','p') as $char) {
+			$bytes /= 1024;
+			if($bytes < 1024)
+				return number_format($bytes, $precision) . "{$char}";
+		}
+	}
+	
 	public function connect($pool1, $pool2) {
 		$pool = new PSO_ConnectedPool($pool1, $pool2);
 		return $pool;

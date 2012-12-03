@@ -14,7 +14,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	protected $spawnRate   = 12;
 	protected $resolveRate = 3;
 	protected $connectionsPerIP = 4;
-	protected $retryLimit = 2;
+	protected $retryLimit = 0;
+	protected $redirectLimit = 1;
 	
 	protected $fetchBodies = true;
 	protected $connectionCache = array();
@@ -133,8 +134,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		return $conns;
 	}
 	
-	public function addTarget($target) {
-		$conns = $this->addTargets(array($target));
+	public function addTarget($target, $onResponse = null) {
+		$conns = $this->addTargets(array($target), $onResponse);
 		foreach($conns as $conn) { return $conn; }
 	}
 	
@@ -157,7 +158,6 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$class = static::$connection_class;
 			$conn = new $class(NULL);
 		}
-		
 		$conn->pool = $this;
 		$conn->requestURI = $target;
 
@@ -229,9 +229,9 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$conn->stream = $stream;
 
 		unset($parts['scheme'], $parts['host']);
-		$url = $this->packURL($parts);
+		$url = $conn->packURL($parts);
 		$url = str_replace(' ', '%20', $url);
-		
+
 		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
 
 		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
@@ -281,17 +281,24 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 
 	public function handleRedirect($conn) {
-		$conn->requestURI = $this->joinURL($conn->requestURI, $conn->responseHeaders['Location']);
-		
-		$this->raiseEvent('Redirect', array($conn->requestURI), NULL, $conn);
-		$conn->raiseEvent('Redirect', array($conn->requestURI));
-		
-		$this->restartConnection($conn);
+		if($conn->redirectCount < $this->redirectLimit) {
+			$conn->requestURI = $conn->getMediaURL($conn->responseHeaders['Location']);
+			
+			$this->raiseEvent('Redirect', array($conn->requestURI), NULL, $conn);
+			$conn->raiseEvent('Redirect', array($conn->requestURI));
+			
+			$conn->redirectCount += 1;
+			$this->restartConnection($conn);
+		} else {
+			$this->raiseEvent('Error', array('Redirect'), NULL, $conn);
+			$conn->raiseEvent('Error', array('Redirect'));
+			$conn->disconnect();
+		}
 	}
 	
 	public function restartConnection($conn) {
 		$url = $conn->requestURI;
-		$conn->disconnect();
+		$conn->disconnect(true);
 		$conn->responseHeaders = array();
 		$conn->rawResponse = '';
 		$conn->requestComplete = false;
@@ -322,40 +329,5 @@ class PSO_HTTPClient extends PSO_ClientPool {
 
 			$this->restartConnection($conn);
 		}
-	}
-	
-	public function joinURL($base, $added) {
-		$base = parse_url($base);
-		$added = parse_url($added);
-
-		if(isset($base['fragment']))
-			unset($base['fragment']);
-		
-		if(isset($base['query']) && isset($added['path']) && !isset($added['query']))
-			unset($base['query']);
-		
-		if($added['path'][0] == '/')
-			unset($base['path']);
-		
-		$parsed_url = $added + $base;
-		
-		if(isset($base['path']) && isset($added['path'])) {
-			$parsed_url['path'] = rtrim($base['path'], '/') . '/' . ltrim($added['path'], '/');
-		}
-	
-		return $this->packURL($parsed_url);
-	}
-
-	function packURL($parsed_url) {
-		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
-		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-		$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
-		$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
-		$pass     = ($user || $pass) ? "$pass@" : '';
-		$path     = isset($parsed_url['path']) ? '/' . ltrim($parsed_url['path'], '/') : '';
-		$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
-		$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-		return "$scheme$user$pass$host$port$path$query$fragment";
 	}
 }
