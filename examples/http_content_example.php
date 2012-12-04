@@ -2,7 +2,6 @@
 // Target URLs to scrape
 $urls = array(
 	'http://codepad.viper-7.com/',
-	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
 	'http://www.news.com.au/',
 	'http://www.google.com/',
