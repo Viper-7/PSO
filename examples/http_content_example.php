@@ -25,6 +25,7 @@ $pool->userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 
 $pool->addTargets($urls, function() use (&$content) {
 	// Store the response in the result array
 	$content[$this->requestURI]['document'][0] = $this->responseBody;
+	$content[$this->requestURI]['requests'] = 1;
 	
 	$dom = $this->getDOM();
 	$base = $this;
@@ -35,7 +36,9 @@ $pool->addTargets($urls, function() use (&$content) {
 		foreach($dom->getElementsByTagName($tagname) as $link) {
 			if($href = $link->getAttribute($attribute)) {
 				$target = $this->getMediaURL($href);
-
+				
+				$content[$this->requestURI]['requests'] += 1;
+				
 				$this->pool->addTarget($target, function() use (&$content, $base, $link) {
 					
 					if($link->getAttribute('type') == 'text/css') {
@@ -43,6 +46,8 @@ $pool->addTargets($urls, function() use (&$content) {
 						
 						foreach($matches as $match) {
 							$target = $base->getMediaURL($match[1]);
+							
+							$content[$base->requestURI]['requests'] += 1;
 							
 							$this->pool->addTarget($target, function() use (&$content, $base) {
 								$content[$base->requestURI]['import'][$this->requestURI] = $this->responseBody;
@@ -55,6 +60,19 @@ $pool->addTargets($urls, function() use (&$content) {
 			}
 		}
 	}
+});
+
+$char = '/';
+$chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
+
+$pool->onTick(function() use (&$char, $chars) {
+	$char = $chars[$char];
+	$active = array_sum(array_map('count', $this->active));
+	$inactive = count($this->connections) - $active;
+	$ipcount = count($this->active);
+	$speed = $this->getReadSpeed();
+
+	echo " {$char} {$active} Connections to {$ipcount} Domains, {$inactive} Queued - {$speed}/s \r";
 });
 
 $start = microtime(true);
@@ -73,6 +91,7 @@ $total = 0;
 			<th>CSS</th>
 			<th>CSS URL</th>
 			<th>Images</th>
+			<th>Requests</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -83,6 +102,7 @@ $total = 0;
 				$css = array_sum(array_map('strlen', $links['link']));
 				$import = array_sum(array_map('strlen', $links['import']));
 				$img = array_sum(array_map('strlen', $links['img']));
+				$requests = $links['requests'];
 				$total += $html + $js + $css + $img;
 		?>
 			<tr>
@@ -92,6 +112,7 @@ $total = 0;
 				<td><?= PSO::divideSize($css) ?>b</td>
 				<td><?= PSO::divideSize($import) ?>b</td>
 				<td><?= PSO::divideSize($img) ?>b</td>
+				<td><?= $requests ?></td>
 			</tr>
 		<?php } ?>
 	</tbody>
