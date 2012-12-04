@@ -3,7 +3,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public static $connection_class = 'PSO_HTTPClientConnection';
 	
 	public $userAgent;
-	public $captureRedirects = false;
+	public $captureRedirects = true;
 	public $active = array();
 	
 	public $requestCount = 0;
@@ -179,6 +179,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		if($this->userAgent)
 			$conn->contextOptions['http']['user_agent'] = $this->userAgent;
 
+		$parts = parse_url($conn->requestURI);
+		$host = isset($parts['host']) ? $parts['host'] : '';
+		$conn->remoteHost = $host;
+		$conn->requestHeaders['Host'] = $host;
+ 
 		$this->raiseEvent('Queue', array(), NULL, $conn);
 		$conn->raiseEvent('Queue');
 
@@ -186,10 +191,12 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$conn->contextOptions['http']['method'] = $conn->requestMethod;
 		else
 			$conn->requestMethod = $conn->contextOptions['http']['method'];
-		
+			
 		if(is_string($conn->requestHeaders))
 			$conn->requestHeaders = explode("\r\n", $conn->requestHeaders);
 		
+		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
+
 		foreach($conn->requestHeaders as $key => $value) {
 			if(is_int($key)) {
 				$conn->contextOptions['http']['header'][] = $value;
@@ -208,13 +215,6 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$conn->contextOptions['http']['content'] = $conn->requestBody;
 		else
 			$conn->requestBody = $conn->contextOptions['http']['content'];
-		
-		$parts = parse_url($conn->requestURI);
-		$host = isset($parts['host']) ? $parts['host'] : '';
-		$conn->remoteHost = $host;
-		
-		$conn->requestHeaders['Host'] = $host;
-		$conn->requestHeaders['User-Agent'] = $this->userAgent;
 
 		$this->connections[] = $conn;
 		
@@ -223,42 +223,19 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	
 	protected function initalizeConnection($conn) {
 		$parts = parse_url($conn->requestURI);
-		$host = $parts['host'];
+		$parts['host'] = $conn->remoteIP;
+		$url = $conn->packURL($parts);
 
-		$url = "tcp://{$conn->remoteIP}:80";
 		$context = stream_context_create($conn->contextOptions);
 
-		$stream = stream_socket_client($url, $errno, $errstr, ini_get('default_socket_timeout'), STREAM_CLIENT_CONNECT, $context);
+		$stream = fopen($url, 'r', false, $context);
 		
 		if(!$stream) {
 			$this->handleError($conn, 'Socket');
 			return $conn;
 		}
 		
-		stream_set_read_buffer($stream, 8192);
 		$conn->stream = $stream;
-
-		unset($parts['scheme'], $parts['host']);
-		$url = $conn->packURL($parts);
-		$url = str_replace(' ', '%20', $url);
-
-		$conn->send("{$conn->requestMethod} {$url} HTTP/1.0\r\n");
-
-		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
-		
-		foreach($conn->requestHeaders as $header => $line) {
-			if(!is_array($line))
-				$line = array($line);
-			
-			foreach($line as $value) {
-				$value = trim($value);
-				$conn->send("{$header}: {$value}\r\n");
-			}
-		}
-		
-		$conn->send("\r\n");
-		
-		$conn->send($conn->requestBody . "\r\n");
 		
 		$this->requestCount += 1;
 		$conn->hasInit = true;
@@ -293,7 +270,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public function handleRedirect($conn) {
 		if($conn->redirectCount < $this->redirectLimit) {
 			$conn->requestURI = $conn->getMediaURL($conn->responseHeaders['Location']);
-			
+
 			$this->raiseEvent('Redirect', array($conn->requestURI), NULL, $conn);
 			$conn->raiseEvent('Redirect', array($conn->requestURI));
 			

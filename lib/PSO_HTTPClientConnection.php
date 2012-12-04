@@ -82,66 +82,78 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	
 	protected function decompress($data) {
 		$algo = 'plain';
-		
+
 		if(isset($this->responseHeaders['Content-Encoding'])) {
 			$algo = $this->responseHeaders['Content-Encoding'];
 		}
 		
-		switch($algo) {
-			case 'gzip':
-				return @gzdecode($data);
-				break;
-			case 'deflate':
-				return @gzinflate($data);
-				break;
-			default:
-				return $data;
-		}
-	}
-
-	public function readData() {
-		if(!empty($this->responseHeaders)) {
-			$content = fread($this->stream, 4096);
-			$this->rawResponse .= $content;
-			
-			$content = explode("\r\n\r\n", $this->rawResponse, 2);
-			if(isset($content[1])) {
-				$this->responseBody = $this->decompress($content[1]);
-				unset($this->dom);
-				$this->pool->handlePartial($this);
-			}
-			
-			if($this->stream && feof($this->stream)) { 
-				$this->requestComplete = true;
-				$this->pool->handleResponse($this);
-
-				return $this->rawResponse;
-			} else {
-				return;
-			}
-		}
-		
-		$this->rawResponse .= fread($this->stream, 1024);
-		$content = explode("\r\n\r\n", $this->rawResponse, 2);
-		if(!isset($content[1]))
+		if(strlen($data) < 11)
 			return;
-		
-		$headers = explode("\r\n", $content[0]);
-		
-		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', array_shift($headers), 3);
 
-		foreach($headers as $header) {
-			list($name, $value) = explode(':', $header, 2) + array('', '');
-			
-			$this->responseHeaders[$name] = trim($value);
+		if($algo == 'gzip') {
+			$out = @gzdecode($data);
+			if($out === false) {
+				$data = substr($data, 10);
+				$algo = 'deflate';
+			}
 		}
+		
+		if($algo == 'deflate') {
+			$out = @gzinflate($data);
+		}
+		
+		if(!empty($out))
+			return $out;
+		else
+			return $data;
+	}
+	
+	public function readData() {
+		if(empty($this->responseHeaders)) {
+			$meta = stream_get_meta_data($this->stream);
+			$headers = $meta['wrapper_data'];
+			
+			foreach($headers as $header) {
+				if(preg_match('#^HTTP/([^ ]+) (\d+) (.*)$#i', $header, $matches)) {
+					list($match, $this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = $matches;
+				} else {
+					list($name, $value) = explode(':', $header, 2) + array('', '');
+					
+					$this->responseHeaders[$name] = trim($value);
+				}
+			}
+			
+			$this->rawResponse = implode("\r\n", $headers) . "\r\n";
 
-		if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
-			$this->pool->handleHead($this);
-		} elseif($this->responseStatusCode > 299 && $this->responseStatusCode < 400) {
-			$this->pool->handleRedirect($this);
+			if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
+				$this->pool->handleHead($this);
+			} elseif($this->responseStatusCode > 299 && $this->responseStatusCode < 400) {
+				return $this->pool->handleRedirect($this);
+			} else {
+				return $this->pool->handleError($this);
+			}
+		}
+		
+		$content = fread($this->stream, 4096);
+
+		if($content) {
+			$this->rawResponse .= $content;
+			$this->responseBody .= $content;
+			
+			unset($this->dom);
+		}
+		
+		if(!$this->stream || feof($this->stream)) {
+			$this->responseBody = $this->decompress($this->responseBody);
+			
+			$this->requestComplete = true;
+			$this->pool->handleResponse($this);
+
+			return $this->rawResponse;
 		} else {
-			$this->pool->handleError($this);
+			$this->pool->handlePartial($this);
+			
+			return;
 		}
 	}
 	
