@@ -6,7 +6,6 @@ $urls = array(
 	'http://www.news.com.au/',
 	'http://www.google.com/',
 	'http://www.bing.com/',
-	'http://www.slashdot.org/',
 	'http://www.wikipedia.org/',
 	'http://www.php.net/'
 );
