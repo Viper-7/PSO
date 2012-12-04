@@ -67,7 +67,7 @@ $total = 0;
 	<thead>
 		<tr>
 			<th>URL</th>
-			<th>Size</th>
+			<th>Page</th>
 			<th>JS</th>
 			<th>CSS</th>
 			<th>CSS URL</th>
@@ -87,9 +87,9 @@ $total = 0;
 		?>
 			<tr>
 				<td><?= htmlentities(substr($baseurl,0,50)); ?></td>
-				<td><?= PSO::divideSize($html) ?>b</td>
-				<td><?= PSO::divideSize($js) ?>b</td>
-				<td><?= PSO::divideSize($css) ?>b</td>
+				<td><?= PSO::divideSize($document) ?>b</td>
+				<td><?= PSO::divideSize($script) ?>b</td>
+				<td><?= PSO::divideSize($link) ?>b</td>
 				<td><?= PSO::divideSize($import) ?>b</td>
 				<td><?= PSO::divideSize($img) ?>b</td>
 				<td><?= $requests ?></td>
