@@ -2,7 +2,6 @@
 // Target URLs to scrape
 $urls = array(
 	'http://codepad.viper-7.com/',
-	'http://www.microsoft.com/',
 	'http://www.amazon.com/',
 	'http://www.rackspace.com/',
 	'http://www.youtube.com/',
@@ -10,7 +9,6 @@ $urls = array(
 	'http://www.google.com/',
 	'http://www.bing.com/',
 	'http://www.slashdot.org/',
-	'http://www.mozilla.org/',
 	'http://www.wikipedia.org/',
 	'http://www.php.net/'
 );
@@ -29,50 +27,41 @@ $pool->addTargets($urls, function() use (&$content) {
 	$content[$this->requestURI]['document'][0] = $this->responseBody;
 	
 	$dom = $this->getDOM();
-	$base = $this->requestURI;
+	$base = $this;
 	
-	// Fetch each <img> tag that has an src attribute
-	foreach($dom->getElementsByTagName('img') as $img) {
-		if($src = $img->getAttribute('src')) {
-			$target = $this->getMediaURL($src);
-			
-			$this->pool->addTarget($target, function() use (&$content, $base) {
-				$content[$base]['img'][$this->requestURI] = $this->responseBody;
-			});
-		}
-	}
-
-	foreach($dom->getElementsByTagName('script') as $script) {
-		if($src = $script->getAttribute('src')) {
-			$target = $this->getMediaURL($src);
-			
-			$this->pool->addTarget($target, function() use (&$content, $base) {
-				$content[$base]['js'][$this->requestURI] = $this->responseBody;
-			});
-		}
-	}
+	$fetch = array('img' => 'src', 'script' => 'src', 'link' => 'href');
 	
-	foreach($dom->getElementsByTagName('link') as $link) {
-		$rel = strtolower($link->getAttribute('rel'));
-		
-		if($rel == 'stylesheet' && $href = $link->getAttribute('href')) {
-			$target = $this->getMediaURL($href);
+	foreach($fetch as $tagname => $attribute) { 
+		foreach($dom->getElementsByTagName($tagname) as $link) {
+			if($href = $link->getAttribute($attribute)) {
+				$target = $this->getMediaURL($href);
 
-			$conn = $this->pool->addTarget($target, function() use (&$content, $base) {
-				$content[$base]['css'][$this->requestURI] = $this->responseBody;
-			});
+				$this->pool->addTarget($target, function() use (&$content, $base, $link) {
+					
+					if($link->getAttribute('type') == 'text/css') {
+						preg_match_all('/url\s*\(?\s*["\']([^"\']+?)["\']/', $this->responseBody, $matches, PREG_SET_ORDER);
+						
+						foreach($matches as $match) {
+							$target = $base->getMediaURL($match[1]);
+							
+							$this->pool->addTarget($target, function() use (&$content, $base) {
+								$content[$base->requestURI]['import'][$this->requestURI] = $this->responseBody;
+							});
+						}
+					}
+					
+					$content[$base->requestURI][$link->tagName][$this->requestURI] = $this->responseBody;
+				});
+			}
 		}
 	}
 });
 
 $start = microtime(true);
-
-// Run the task
 PSO::drain($pool);
-
 $end = microtime(true);
 $time = number_format($end - $start, 3);
-$total = 0
+$total = 0;
 
 ?>
 <table width="600">
@@ -82,15 +71,17 @@ $total = 0
 			<th>Size</th>
 			<th>JS</th>
 			<th>CSS</th>
+			<th>CSS URL</th>
 			<th>Images</th>
 		</tr>
 	</thead>
 	<tbody>
 		<?php foreach($content as $baseurl => $links) {
-				$links += ['document' => [], 'js' => [], 'css' => [], 'img' => []];
+				$links += ['document'=>[],'script'=>[],'link'=>[],'import'=>[],'img'=>[]];
 				$html = array_sum(array_map('strlen', $links['document']));
-				$js = array_sum(array_map('strlen', $links['js']));
-				$css = array_sum(array_map('strlen', $links['css']));
+				$js = array_sum(array_map('strlen', $links['script']));
+				$css = array_sum(array_map('strlen', $links['link']));
+				$import = array_sum(array_map('strlen', $links['import']));
 				$img = array_sum(array_map('strlen', $links['img']));
 				$total += $html + $js + $css + $img;
 		?>
@@ -99,6 +90,7 @@ $total = 0
 				<td><?= PSO::divideSize($html) ?>b</td>
 				<td><?= PSO::divideSize($js) ?>b</td>
 				<td><?= PSO::divideSize($css) ?>b</td>
+				<td><?= PSO::divideSize($import) ?>b</td>
 				<td><?= PSO::divideSize($img) ?>b</td>
 			</tr>
 		<?php } ?>
@@ -106,7 +98,7 @@ $total = 0
 	<tfoot>
 		<tr>
 			<td colspan="2"><?= PSO::divideSize($total); ?>b total</td>
-			<td colspan="3"><?= $requests ?> requests took <?= $time ?> seconds</td>
+			<td colspan="3"><?= $pool->requestCount ?> requests took <?= $time ?> seconds</td>
 		</tr>
 	</tfoot>
 </table>

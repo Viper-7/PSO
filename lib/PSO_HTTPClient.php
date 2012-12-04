@@ -118,14 +118,23 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		foreach($targets as $target) {
 			if(isset($this->connectionCache[$target])) {
 				$conn = $this->connectionCache[$target];
-				if($onResponse)
-					$conn->onResponse($onResponse);
-				if($conn->requestComplete) 
-					$conn->raiseEvent('Response');
+
+				if($onResponse) {
+					if($conn->requestComplete) {
+						$callback = $onResponse->bindTo($conn, $conn);
+						$result = $callback();
+					
+						if($result != 'unregister')
+							$conn->onResponse($onResponse);
+					}
+				}
+				
 				$conns[$target] = $conn;
 			} else {
 				$conn = $this->createConnection($target);
+				
 				$conns[$target] = $conn;
+				
 				if($onResponse)
 					$conn->onResponse($onResponse);
 			}
@@ -160,6 +169,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 		$conn->pool = $this;
 		$conn->requestURI = $target;
+		$this->connectionCache[$target] = $conn;
 
 		$conn->contextOptions = array();
 		$conn->contextOptions['http']['header'] = array();

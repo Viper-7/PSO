@@ -5,13 +5,14 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	
 	public $remoteHost;
 	public $remoteIP;
+	public $htmlErrors = array();
 
 	public $requestMethod = 'GET';
 	public $requestHeaders = array(
 		'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 		'Connection' => 'close',
 		'Accept-Language' => 'en-US,en;q=0.6',
-		'Accept-Encoding' => 'plain',
+		'Accept-Encoding' => 'gzip, deflate',
 		'Pragma' => 'no-cache',
 		'Cache-Control' => 'no-cache',
 	);
@@ -78,15 +79,37 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		//Set-Cookie: value[; expires=date][; domain=domain][; path=path][; secure]
 		$this->requestHeaders['Set-Cookie'][] = "{$name}={$value}";
 	}
+	
+	protected function decompress($data) {
+		$algo = 'plain';
+		
+		if(isset($this->responseHeaders['Content-Encoding'])) {
+			$algo = $this->responseHeaders['Content-Encoding'];
+		}
+		
+		switch($algo) {
+			case 'gzip':
+				return @gzdecode($data);
+				break;
+			case 'deflate':
+				return @gzinflate($data);
+				break;
+			default:
+				return $data;
+		}
+	}
 
 	public function readData() {
 		if(!empty($this->responseHeaders)) {
 			$content = fread($this->stream, 4096);
 			$this->rawResponse .= $content;
-			$this->responseBody .= $content;
-			unset($this->dom);
 			
-			$this->pool->handlePartial($this);
+			$content = explode("\r\n\r\n", $this->rawResponse, 2);
+			if(isset($content[1])) {
+				$this->responseBody = $this->decompress($content[1]);
+				unset($this->dom);
+				$this->pool->handlePartial($this);
+			}
 			
 			if($this->stream && feof($this->stream)) { 
 				$this->requestComplete = true;
@@ -100,12 +123,10 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		
 		$this->rawResponse .= fread($this->stream, 1024);
 		$content = explode("\r\n\r\n", $this->rawResponse, 2);
-		
 		if(!isset($content[1]))
 			return;
 		
 		$headers = explode("\r\n", $content[0]);
-		$this->responseBody = $content[1];
 		
 		list($this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = explode(' ', array_shift($headers), 3);
 
@@ -114,7 +135,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			
 			$this->responseHeaders[$name] = trim($value);
 		}
-		
+
 		if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
 			$this->pool->handleHead($this);
 		} elseif($this->responseStatusCode > 299 && $this->responseStatusCode < 400) {
