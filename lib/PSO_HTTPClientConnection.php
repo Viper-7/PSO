@@ -112,7 +112,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		if(empty($this->responseHeaders)) {
 			$meta = stream_get_meta_data($this->stream);
 			$headers = $meta['wrapper_data'];
-			
+
 			foreach($headers as $header) {
 				if(preg_match('#^HTTP/([^ ]+) (\d+) (.*)$#i', $header, $matches)) {
 					list($match, $this->responseHTTPVersion, $this->responseStatusCode, $this->responseStatus) = $matches;

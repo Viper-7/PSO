@@ -175,6 +175,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$conn->contextOptions['http']['header'] = array();
 		$conn->contextOptions['http']['ignore_errors'] = 1;
 		$conn->contextOptions['http']['follow_location'] = intval(!$this->captureRedirects);
+		$conn->contextOptions['http']['protocol_version'] = 1.0;
 		
 		if($this->userAgent)
 			$conn->contextOptions['http']['user_agent'] = $this->userAgent;
