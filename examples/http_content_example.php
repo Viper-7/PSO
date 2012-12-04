@@ -59,23 +59,7 @@ $pool->addTargets($urls, function() use (&$content) {
 	}
 });
 
-$char = '/';
-$chars = array('/' => '-', '-' => '\\', '\\' => '|','|'=>'/');
-
-$pool->onTick(function() use (&$char, $chars) {
-	$char = $chars[$char];
-	$active = array_sum(array_map('count', $this->active));
-	$inactive = count($this->connections) - $active;
-	$ipcount = count($this->active);
-	$speed = $this->getReadSpeed();
-
-	echo " {$char} {$active} Connections to {$ipcount} Domains, {$inactive} Queued - {$speed}/s \r";
-});
-
-$start = microtime(true);
-PSO::drain($pool);
-$end = microtime(true);
-$time = number_format($end - $start, 3);
+$time = PSO::drain($pool);
 $total = 0;
 
 ?>
@@ -94,13 +78,12 @@ $total = 0;
 	<tbody>
 		<?php foreach($content as $baseurl => $links) {
 				$links += ['document'=>[],'script'=>[],'link'=>[],'import'=>[],'img'=>[]];
-				$html = array_sum(array_map('strlen', $links['document']));
-				$js = array_sum(array_map('strlen', $links['script']));
-				$css = array_sum(array_map('strlen', $links['link']));
-				$import = array_sum(array_map('strlen', $links['import']));
-				$img = array_sum(array_map('strlen', $links['img']));
+				$vars = ['document', 'script', 'link', 'import', 'img'];
+				foreach($vars as $name) {
+					$$name = array_sum(array_map('strlen', $links[$name]));
+				}
 				$requests = $links['requests'];
-				$total += $html + $js + $css + $img;
+				$total += $document + $script + $link + $import + $img;
 		?>
 			<tr>
 				<td><?= htmlentities(substr($baseurl,0,50)); ?></td>
@@ -115,8 +98,8 @@ $total = 0;
 	</tbody>
 	<tfoot>
 		<tr>
-			<td colspan="2"><?= PSO::divideSize($total); ?>b total</td>
-			<td colspan="3"><?= $pool->requestCount ?> requests took <?= $time ?> seconds</td>
+			<td><?= PSO::divideSize($total); ?>b total</td>
+			<td colspan="6"><?= $pool->requestCount ?> requests took <?= $time ?> seconds</td>
 		</tr>
 	</tfoot>
 </table>

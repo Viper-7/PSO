@@ -23,6 +23,7 @@ abstract class PSO {
 	
 	public static function drain() {
 		$pools = func_get_args();
+		$start = microtime(true);
 		
 		while(true) {
 			$read = $write = $except = array();
@@ -71,5 +72,8 @@ abstract class PSO {
 				$pool->handleTick();
 			}
 		}
+		
+		$end = microtime(true);
+		return number_format($end - $start, 4);
 	}
 }
