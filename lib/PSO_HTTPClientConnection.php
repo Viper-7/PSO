@@ -87,14 +87,16 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			$algo = $this->responseHeaders['Content-Encoding'];
 		}
 		
-		if(strlen($data) < 11)
-			return;
-
 		if($algo == 'gzip') {
+			if(strlen($data) < 11)
+				return $data;
+			
 			$out = @gzdecode($data);
+			
 			if($out === false) {
-				$data = substr($data, 10);
-				$algo = 'deflate';
+				$out = @gzinflate(substr($data, 10));
+				if(!$out)
+					$algo = 'deflate';
 			}
 		}
 		
