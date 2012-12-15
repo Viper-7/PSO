@@ -49,9 +49,9 @@ abstract class PSO_Pool {
 	
 	public function getStreams() {
 		$read = $write = $except = array();
-		
+
 		foreach($this->connections as $conn) {
-			if(!$conn->stream) {
+			if(!$conn->stream || ($conn->timeToLive && $conn->ttlExpiry < time())) {
 				$conn->disconnect();
 				continue;
 			}

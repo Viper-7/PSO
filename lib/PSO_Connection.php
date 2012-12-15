@@ -3,6 +3,8 @@ class PSO_Connection {
 	use PSO_EventProvider;
 
 	public static $chunk_size = 8192;
+	public $timeToLive;
+	protected $ttlExpiry;
 	
 	public $pool;
 	public $stream;
@@ -11,6 +13,7 @@ class PSO_Connection {
 	protected $outputBuffer = '';
 	
 	public function readData() {
+		$this->ttlExpiry = time() + $this->timeToLive;
 		$data = fread($this->stream, static::$chunk_size);
 		return $data;
 	}
@@ -24,6 +27,7 @@ class PSO_Connection {
 			$this->outputBuffer = '';
 		}
 
+		$this->ttlExpiry = time() + $this->timeToLive;
 		$written = @fwrite($this->stream, $chunk);
 		$this->sent .= substr($chunk,0,$written);
 		$this->pool->bytesWritten += $written;

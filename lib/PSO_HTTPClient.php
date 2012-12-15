@@ -29,7 +29,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		foreach($this->active as $set) {
 			foreach($set as $conn) {
-				if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream)) {
+				if(!$conn->stream || !is_resource($conn->stream) || feof($conn->stream) || ($conn->timeToLive && $conn->ttlExpiry < time())) {
 					$conn->disconnect();
 				}
 			}

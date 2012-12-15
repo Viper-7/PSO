@@ -16,9 +16,15 @@ abstract class PSO_ServerPool extends PSO_Pool {
 	public function getStreams() {
 		list($read, $write, $except) = parent::getStreams();
 
-		foreach($this->servers as $conn) {
-			$read[] = $conn->stream;
+		foreach($this->servers as $key => $conn) {
+			if($conn->timeToLive && $conn->ttlExpiry < time()) {
+				$conn->close();
+				unset($this->servers[$key]);
+			} else {
+				$read[] = $conn->stream;
+			}
 		}
+		
 		return array($read, $write, $except);
 	}
 
