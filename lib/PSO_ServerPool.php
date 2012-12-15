@@ -1,7 +1,7 @@
 <?php
 abstract class PSO_ServerPool extends PSO_Pool {
 	public static $connection_class = 'PSO_ServerConnection';
-	protected $servers = array();
+	public $servers = array();
 	
 	public function findConnection($stream) {
 		foreach($this->servers as $server) {

@@ -36,6 +36,9 @@ class PSO_IRCClientUser {
 			$this->close();
 		});
 		
+		$server = current($pool->servers);
+		$server->timeToLive = 30;
+		
 		PSO::addPool($pool);
 		
 		$ip = PSO::$ip;
