@@ -61,6 +61,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		}
 		
 		$this->requestMethod = 'POST';
+		$this->requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
 		$this->requestBody = http_build_query($data);
 	}
 	

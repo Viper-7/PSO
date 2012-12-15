@@ -188,15 +188,19 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$this->raiseEvent('Queue', array(), NULL, $conn);
 		$conn->raiseEvent('Queue');
 
+		$this->connections[] = $conn;
+		
+		return $conn;
+	}
+	
+	protected function initalizeConnection($conn) {
 		if(!isset($conn->contextOptions['http']['method']))
 			$conn->contextOptions['http']['method'] = $conn->requestMethod;
 		else
 			$conn->requestMethod = $conn->contextOptions['http']['method'];
-			
+		
 		if(is_string($conn->requestHeaders))
 			$conn->requestHeaders = explode("\r\n", $conn->requestHeaders);
-		
-		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
 
 		foreach($conn->requestHeaders as $key => $value) {
 			if(is_int($key)) {
@@ -217,12 +221,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		else
 			$conn->requestBody = $conn->contextOptions['http']['content'];
 
-		$this->connections[] = $conn;
-		
-		return $conn;
-	}
-	
-	protected function initalizeConnection($conn) {
+		$conn->requestHeaders['Content-Length'] = strlen($conn->requestBody);
+
 		$parts = parse_url($conn->requestURI);
 		$parts['host'] = $conn->remoteIP;
 		$url = $conn->packURL($parts);
