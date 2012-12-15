@@ -41,6 +41,7 @@ class PSO_IRCClientUser {
 		$ip = file_get_contents('http://automation.whatismyip.com/n09230945.asp');
 		$filename = str_replace('"', '', $filename);
 		$filesize = filesize($path);
+		echo "DCC SEND \"{$filename}\" {$ip} {$port} {$filesize}";
 		$this->sendCTCP("DCC SEND \"{$filename}\" {$ip} {$port} {$filesize}");
 	}
 }
@@ -166,6 +167,7 @@ class PSO_IRCClientConnection extends PSO_ClientConnection {
 	public function processIncoming($message) {
 		$this->lastping = time();
 		$parts = explode(' ', trim($message,": \r\n")) + array('', '');
+		$ctcp = false;
 		
 		switch($parts[0]) {
 			case 'NOTICE':
