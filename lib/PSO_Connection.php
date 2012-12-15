@@ -4,7 +4,7 @@ class PSO_Connection {
 
 	public static $chunk_size = 8192;
 	public $timeToLive;
-	protected $ttlExpiry;
+	public $ttlExpiry;
 	
 	public $pool;
 	public $stream;
