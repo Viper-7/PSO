@@ -27,6 +27,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	
 	public $errorCount = 0;
 	public $redirectCount = 0;
+	public $connectionDelay = 0;
 	
 	public $hasInit = false;
 	public $headersSent = false;
@@ -34,6 +35,11 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $requestComplete = false;
 	public $rawResponse = '';
 
+	public function isReady() {
+		if(!$this->connectionDelay) return true;
+		$this->connectionDelay--;
+	}
+	
 	public function getDOM() { 
 		if(isset($this->dom))
 			return $this->dom;

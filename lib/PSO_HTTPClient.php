@@ -9,6 +9,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $requestCount = 0;
 	public $retryCount = 0;
 	public $statusCount  = array();
+	public $connectionDelay = 0;
 	
 	protected $concurrency = 1;
 	protected $spawnRate   = 12;
@@ -64,7 +65,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			if($resolveCount >= $this->resolveRate)
 				return;
 			
-			if(!$conn->remoteIP) {
+			if(!$conn->remoteIP && $conn->isReady()) {
 				if(isset($this->dnsCache[$conn->remoteHost])) {
 					$ip = $this->dnsCache[$conn->remoteHost];
 				} else {
@@ -96,7 +97,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			
 			$conn = $this->connections[$key];
 
-			if(!$conn->hasInit) {
+			if(!$conn->hasInit && $conn->isReady()) {
 				if($this->initalizeConnection($conn)) {
 					$spawnCount++;
 					if($spawnCount >= $this->spawnRate)
@@ -169,6 +170,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		}
 		$conn->pool = $this;
 		$conn->requestURI = $target;
+		$conn->connectionDelay = $this->connectionDelay;
 		$this->connectionCache[$target] = $conn;
 
 		$conn->contextOptions = array();
