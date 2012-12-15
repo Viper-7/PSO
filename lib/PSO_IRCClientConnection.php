@@ -17,6 +17,32 @@ class PSO_IRCClientUser {
 	public function send($message) {
 		$this->connection->sendPrivate($this->nick, $message);
 	}
+	
+	public function sendCTCP($message) {
+		$this->send("\001{$message}\001");
+	}
+	
+	public function sendFile($path, $filename = NULL) {
+		if(is_null($filename))
+			$filename = basename($path);
+		
+		$port = mt_rand(1024, 2048);
+		$pool = new PSO_TCPServer($port);
+		$pool->onConnect(function() use ($path) {
+			$this->send(file_get_contents($path));
+			$this->disconnect();
+		});
+		$pool->onDisconnect(function() {
+			$this->close();
+		});
+		
+		PSO::addPool($pool);
+		
+		$ip = file_get_contents('http://automation.whatismyip.com/n09230945.asp');
+		$filename = str_replace('"', '', $filename);
+		$filesize = filesize($path);
+		$this->sendCTCP("DCC SEND \"{$filename}\" {$ip} {$port} {$filesize}");
+	}
 }
 
 class PSO_IRCClientChannel {
@@ -171,13 +197,13 @@ class PSO_IRCClientConnection extends PSO_ClientConnection {
 						$user = $this->getUserByHost($parts[0]);
 						$chan = $this->getChannel($parts[2]);
 
-						$this->pool->raiseEvent('Message', array($content, $user), NULL, $chan);
-						$this->raiseEvent('Message', array($content, $user), NULL, $chan);
-						$chan->raiseEvent('Message', array($content, $user));
+						$this->pool->raiseEvent('Message', array($content, $user, $ctcp), NULL, $chan);
+						$this->raiseEvent('Message', array($content, $user, $ctcp), NULL, $chan);
+						$chan->raiseEvent('Message', array($content, $user, $ctcp));
 					} else {
 						$user = $this->getUserByHost($parts[0]);
-						$this->pool->raiseEvent('PrivateMessage', array($content), NULL, $user);
-						$this->raiseEvent('PrivateMessage', array($content), NULL, $user);
+						$this->pool->raiseEvent('PrivateMessage', array($content, $ctcp), NULL, $user);
+						$this->raiseEvent('PrivateMessage', array($content, $ctcp), NULL, $user);
 					}
 				}
 				break;

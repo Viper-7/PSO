@@ -13,6 +13,14 @@ trait PSO_EventProvider {
 		if(!is_array($args))
 			$args = array($args);
 		
+		if(method_exists($this, $event)) { 
+			$ret = call_user_func_array(array($this, $event), array_merge(array($context), $args));
+			$called++;
+			
+			if($ret == 'unregister')
+				unset($this->events[$event][$filter]);
+		}
+		
 		if(isset($this->events[$event])) {
 			foreach($this->events[$event] as $filter => $callback) {
 				if($target && !is_int($filter)) {

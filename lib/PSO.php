@@ -1,5 +1,7 @@
 <?php
 abstract class PSO {
+	protected static $pools;
+	
 	protected static function find_connection($fp, $pools) {
 		foreach($pools as $pool) {
 			if($conn = $pool->findConnection($fp)) {
@@ -16,20 +18,24 @@ abstract class PSO {
 		}
 	}
 	
+	public function addPool($pool) {
+		self::$pools[] = $pool;
+	}
+	
 	public function connect($pool1, $pool2) {
 		$pool = new PSO_ConnectedPool($pool1, $pool2);
 		return $pool;
 	}
 	
 	public static function drain() {
-		$pools = func_get_args();
+		self::$pools = func_get_args();
 		$start = microtime(true);
 		
 		while(true) {
 			$read = $write = $except = array();
 			
 			$open = false;
-			foreach($pools as $pool) {
+			foreach(self::$pools as $pool) {
 				list($poolRead, $poolWrite, $poolExcept) = $pool->getStreams();
 				$read = array_merge($read, $poolRead);
 				$write = array_merge($write, $poolWrite);
@@ -49,13 +55,13 @@ abstract class PSO {
 			if($read || $write || $except) {
 				if(stream_select($read, $write, $except, $wait_s, $wait_us)) {
 					foreach($write as $fp) {
-						list($pool, $conn) = self::find_connection($fp, $pools);
+						list($pool, $conn) = self::find_connection($fp, self::$pools);
 						
 						$pool->sendBuffer($conn);
 					}
 
 					foreach($read as $fp) {
-						list($pool, $conn) = self::find_connection($fp, $pools);
+						list($pool, $conn) = self::find_connection($fp, self::$pools);
 						
 						if($conn) {
 							if($conn->stream)
@@ -68,7 +74,7 @@ abstract class PSO {
 			}
 			
 			
-			foreach($pools as $pool) {
+			foreach(self::$pools as $pool) {
 				$pool->handleTick();
 			}
 		}

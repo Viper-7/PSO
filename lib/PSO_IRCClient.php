@@ -24,5 +24,4 @@ class PSO_IRCClient extends PSO_ClientPool {
 		$this->addConnection($conn);
 		return $conn;
 	}
-
 }
