@@ -1,5 +1,6 @@
 <?php
 abstract class PSO {
+	public static $ip;
 	protected static $pools;
 	
 	protected static function find_connection($fp, $pools) {
@@ -28,6 +29,8 @@ abstract class PSO {
 	}
 	
 	public static function drain() {
+		self::$ip = ip2long(trim(file_get_contents('http://automation.whatismyip.com/n09230945.asp')));
+		
 		self::$pools = func_get_args();
 		$start = microtime(true);
 		
