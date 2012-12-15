@@ -65,32 +65,34 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			if($resolveCount >= $this->resolveRate)
 				return;
 			
-			if(!$conn->remoteIP && $conn->isReady()) {
-				if(isset($this->dnsCache[$conn->remoteHost])) {
-					$ip = $this->dnsCache[$conn->remoteHost];
-				} else {
-					$ip = @gethostbyname($conn->remoteHost);
-					$this->dnsCache[$conn->remoteHost] = $ip;
-					$resolveCount++;
+			if($conn->isReady()) {
+				if(!$conn->remoteIP) {
+					if(isset($this->dnsCache[$conn->remoteHost])) {
+						$ip = $this->dnsCache[$conn->remoteHost];
+					} else {
+						$ip = @gethostbyname($conn->remoteHost);
+						$this->dnsCache[$conn->remoteHost] = $ip;
+						$resolveCount++;
+					}
+					
+					if($ip == $conn->remoteHost) {
+						$this->handleError($conn, 'DNS');
+						continue;
+					}
+					
+					if(!$ip) {
+						unset($this->dnsCache[$conn->remoteHost]);
+						continue;
+					}
+					
+					$conn->remoteIP = $ip;
 				}
-				
-				if($ip == $conn->remoteHost) {
-					$this->handleError($conn, 'DNS');
-					continue;
-				}
-				
-				if(!$ip) {
-					unset($this->dnsCache[$conn->remoteHost]);
-					continue;
-				}
-				
-				$conn->remoteIP = $ip;
-			}
 			
-			if(isset($this->active[$conn->remoteIP]))
-				$counts[$key] = count($this->active[$conn->remoteIP]);
-			else
-				$counts[$key] = 0;
+				if(isset($this->active[$conn->remoteIP]))
+					$counts[$key] = count($this->active[$conn->remoteIP]);
+				else
+					$counts[$key] = 0;
+			}
 		}
 
 		arsort($counts);
@@ -102,7 +104,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			
 			$conn = $this->connections[$key];
 
-			if(!$conn->hasInit && $conn->isReady()) {
+			if(!$conn->hasInit) {
 				if($this->initalizeConnection($conn)) {
 					$spawnCount++;
 					if($spawnCount >= $this->spawnRate)
