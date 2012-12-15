@@ -38,7 +38,8 @@ class PSO_IRCClientUser {
 		
 		$server = current($pool->servers);
 		$server->timeToLive = 30;
-		
+		$server->ttlExpiry = time() + $server->timeToLive;
+
 		PSO::addPool($pool);
 		
 		$ip = PSO::$ip;
@@ -83,6 +84,7 @@ class PSO_IRCClientConnection extends PSO_ClientConnection {
 	protected $authenticated;
 	
 	public function readData() {
+		$this->ttlExpiry = time() + $this->timeToLive;
 		$data = fgets($this->stream);
 		$this->processIncoming($data);
 		return $data;
