@@ -22,6 +22,7 @@ class PSO_TCPServer extends PSO_ServerPool {
 		
 		$conn = new PSO_Server($socket);
 		$conn->pool = $this;
+		$conn->ttlExpiry = time() + $conn->timeToLive;
 		
 		$this->servers[$serverID] = $conn;
 	}

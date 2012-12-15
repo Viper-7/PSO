@@ -175,6 +175,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 			$class = static::$connection_class;
 			$conn = new $class(NULL);
 		}
+		$conn->ttlExpiry = time() + $conn->timeToLive;
 		$conn->pool = $this;
 		$conn->requestURI = $target;
 		$conn->connectionDelay = $this->connectionDelay;

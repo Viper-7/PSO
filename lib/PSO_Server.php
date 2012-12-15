@@ -5,7 +5,6 @@ class PSO_Server extends PSO_Connection {
 	}
 
 	public function readData() {
-		$this->ttlExpiry = time() + $this->timeToLive;
 		$stream = stream_socket_accept($this->stream, 0, $clientIP);
 
 		$poolClass = get_class($this->pool);
