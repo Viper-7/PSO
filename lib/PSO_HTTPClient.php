@@ -79,6 +79,11 @@ class PSO_HTTPClient extends PSO_ClientPool {
 					continue;
 				}
 				
+				if(!$ip) {
+					unset($this->dnsCache[$conn->remoteHost]);
+					continue;
+				}
+				
 				$conn->remoteIP = $ip;
 			}
 			
