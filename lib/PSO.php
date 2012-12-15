@@ -45,6 +45,7 @@ abstract class PSO {
 			if(!$open) break;
 			
 			// Hackish fix to catch process closure, leave the process handle in the read array until now
+			// @todo use $pool->open instead
 			$read = array_filter($read, function($stream) { return get_resource_type($stream) != 'process'; });
 			
 			$wait = PSO_Pool::$next_poll - microtime(true);
@@ -72,7 +73,6 @@ abstract class PSO {
 					}
 				}
 			}
-			
 			
 			foreach(self::$pools as $pool) {
 				$pool->handleTick();

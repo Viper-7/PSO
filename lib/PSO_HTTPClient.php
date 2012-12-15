@@ -10,7 +10,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $retryCount = 0;
 	public $statusCount  = array();
 	
-	protected $concurrency = 100;
+	protected $concurrency = 1;
 	protected $spawnRate   = 12;
 	protected $resolveRate = 5;
 	protected $connectionsPerIP = 20;
@@ -62,7 +62,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		foreach($this->connections as $key => $conn) {
 			if($resolveCount >= $this->resolveRate)
-				break;
+				return;
 			
 			if(!$conn->remoteIP) {
 				if(isset($this->dnsCache[$conn->remoteHost])) {
