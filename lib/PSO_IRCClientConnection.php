@@ -61,6 +61,7 @@ class PSO_IRCClientChannel {
 	}
 	
 	public function send($message) {
+		$this->raiseEvent('Send', array($message));
 		$this->connection->sendChannel($this->name, $message);
 	}
 	
@@ -97,6 +98,7 @@ class PSO_IRCClientConnection extends PSO_ClientConnection {
 	
 	public function sendChannel($channel, $message) {
 		$message = trim($message);
+		$this->raiseEvent('Send', array($message), NULL, $this->channels[$channel]);
 		$this->send("PRIVMSG {$channel} :{$message}\n");
 	}
 	
