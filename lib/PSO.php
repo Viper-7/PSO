@@ -18,7 +18,7 @@ abstract class PSO {
 		}
 	}
 	
-	public function addPool($pool) {
+	public static function addPool($pool) {
 		self::$pools[] = $pool;
 	}
 	

@@ -38,10 +38,9 @@ class PSO_IRCClientUser {
 		
 		PSO::addPool($pool);
 		
-		$ip = file_get_contents('http://automation.whatismyip.com/n09230945.asp');
+		$ip = ip2long(trim(file_get_contents('http://automation.whatismyip.com/n09230945.asp')));
 		$filename = str_replace('"', '', $filename);
 		$filesize = filesize($path);
-		echo "DCC SEND \"{$filename}\" {$ip} {$port} {$filesize}";
 		$this->sendCTCP("DCC SEND \"{$filename}\" {$ip} {$port} {$filesize}");
 	}
 }
