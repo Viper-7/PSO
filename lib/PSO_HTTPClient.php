@@ -123,6 +123,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function addTargets($targets, $onResponse = null) {
+		$this->open = true;
 		$conns = array();
 		
 		foreach($targets as $target) {
@@ -154,6 +155,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function addTarget($target, $onResponse = null) {
+		$this->open = true;
 		$conns = $this->addTargets(array($target), $onResponse);
 		foreach($conns as $conn) { return $conn; }
 	}
