@@ -123,6 +123,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	}
 	
 	public function addTargets($targets, $onResponse = null) {
+		$conns = array();
+		
 		foreach($targets as $target) {
 			if(isset($this->connectionCache[$target])) {
 				$conn = $this->connectionCache[$target];
