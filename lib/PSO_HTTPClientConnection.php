@@ -51,7 +51,12 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		if(!trim($this->responseBody))
 			return $dom;
 		
-		$dom->loadHTML($this->responseBody);
+		if(isset($this->responseHeaders['Content-Type']) && $this->responseHeaders['Content-Type'] == 'text/xml') {
+			$dom->loadXML($this->responseBody);
+		} else {
+			$dom->loadHTML($this->responseBody);
+		}
+		
 		$errors = libxml_get_errors();
 		libxml_use_internal_errors($olderr);
 		
