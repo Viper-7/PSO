@@ -29,7 +29,7 @@ abstract class PSO {
 	}
 	
 	public static function drain() {
-		self::$ip = ip2long(trim(file_get_contents('http://automation.whatismyip.com/n09230945.asp')));
+		self::$ip = ip2long(trim(file_get_contents('http://icanhazip.com/')));
 		
 		self::$pools = func_get_args();
 		$start = microtime(true);
