@@ -125,6 +125,9 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public function readData() {
 		if(empty($this->responseHeaders)) {
 			$meta = stream_get_meta_data($this->stream);
+			if(!isset($meta['wrapper_data']))
+				return $this->pool->handleError($this);
+			
 			$headers = $meta['wrapper_data'];
 
 			foreach($headers as $header) {

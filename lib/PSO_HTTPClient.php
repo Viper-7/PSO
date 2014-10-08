@@ -242,7 +242,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 
 		$context = stream_context_create($conn->contextOptions);
 
-		$stream = fopen($url, 'r', false, $context);
+		$stream = @fopen($url, 'r', false, $context);
 		
 		if(!$stream) {
 			$this->handleError($conn, 'Socket');
