@@ -12,6 +12,8 @@ $urls = array(
 
 include_once '../PSO.php';
 
+ini_set('max_execution_time', 180);
+
 $content = array();
 $pool = new PSO_HTTPClient();
 
