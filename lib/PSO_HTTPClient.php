@@ -191,18 +191,26 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$conn->contextOptions['http']['ignore_errors'] = 1;
 		$conn->contextOptions['http']['follow_location'] = intval(!$this->captureRedirects);
 		$conn->contextOptions['http']['protocol_version'] = 1.0;
-		
+
 		if($this->userAgent)
 			$conn->contextOptions['http']['user_agent'] = $this->userAgent;
-		
-		if(!$this->validateCertificates)
-			$conn->contextOptions['ssl']['verify_peer'] = false;
 		
 		$parts = parse_url($conn->requestURI);
 		$host = isset($parts['host']) ? $parts['host'] : '';
 		$conn->remoteHost = $host;
 		$conn->requestHeaders['Host'] = $host;
- 
+
+		$conn->contextOptions['ssl']['peer_name'] = $host;
+		
+		if(!$this->validateCertificates)
+			$conn->contextOptions['ssl']['verify_peer'] = false;
+
+		if(!$this->validateCertificateNames)
+			$conn->contextOptions['ssl']['verify_peer_name'] = false;
+
+		if($this->allowSelfSignedCertificates)
+			$conn->contextOptions['ssl']['allow_self_signed'] = true;
+		
 		$this->raiseEvent('Queue', array(), NULL, $conn);
 		$conn->raiseEvent('Queue');
 
