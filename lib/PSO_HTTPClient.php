@@ -11,7 +11,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	public $connectionDelay = 0;
 	
-	public $validateCertificates = true;
+	public $validateCertificateAuthorities = true;
 	public $validateCertificateNames = true;
 	public $allowSelfSignedCertificates = false;
 	
@@ -204,7 +204,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 
 		$conn->contextOptions['ssl']['peer_name'] = $host;
 		
-		if(!$this->validateCertificates)
+		if(!$this->validateCertificateAuthorities)
 			$conn->contextOptions['ssl']['verify_peer'] = false;
 
 		if(!$this->validateCertificateNames)
