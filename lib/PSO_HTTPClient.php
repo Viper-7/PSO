@@ -12,6 +12,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $connectionDelay = 0;
 	
 	public $validateCertificates = true;
+	public $validateCertificateNames = true;
+	public $allowSelfSignedCertificates = false;
 	
 	protected $concurrency = 20;
 	protected $spawnRate   = 12;
