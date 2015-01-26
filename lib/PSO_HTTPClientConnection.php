@@ -92,12 +92,18 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		$this->requestHeaders['Set-Cookie'][] = "{$name}={$value}";
 	}
 	
-	protected function decompress($data) {
+	protected function getCompressionAlgo() {
 		$algo = 'plain';
 
 		if(isset($this->responseHeaders['Content-Encoding'])) {
 			$algo = $this->responseHeaders['Content-Encoding'];
 		}
+		
+		return $algo;
+	}
+	
+	protected function decompress($data) {
+		$algo = $this->getCompressionAlgo();
 		
 		if($algo == 'gzip') {
 			if(strlen($data) < 11)
@@ -152,7 +158,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		}
 		
 		$content = fread($this->stream, 4096);
-
+		
 		if($content) {
 			$this->rawResponse .= $content;
 			$this->responseBody .= $content;
@@ -160,15 +166,19 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			unset($this->dom);
 		}
 		
-		$this->pool->handlePartial($this);
-		
 		if(!$this->stream || feof($this->stream)) {
 			$this->responseBody = $this->decompress($this->responseBody);
+			
+			$this->pool->handlePartial($this);
 			
 			$this->requestComplete = true;
 			$this->pool->handleResponse($this);
 
 			return $this->rawResponse;
+		} else {
+			if($this->getCompressionAlgo() == 'plain') {
+				$this->pool->handlePartial($this);
+			}
 		}
 	}
 	
