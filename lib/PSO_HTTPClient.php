@@ -11,6 +11,8 @@ class PSO_HTTPClient extends PSO_ClientPool {
 	public $statusCount  = array();
 	public $connectionDelay = 0;
 	
+	public $validateCertificates = true;
+	
 	protected $concurrency = 20;
 	protected $spawnRate   = 12;
 	protected $resolveRate = 5;
@@ -192,7 +194,10 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		
 		if($this->userAgent)
 			$conn->contextOptions['http']['user_agent'] = $this->userAgent;
-
+		
+		if(!$this->validateCertificates)
+			$conn->contextOptions['ssl']['verify_peer'] = false;
+		
 		$parts = parse_url($conn->requestURI);
 		$host = isset($parts['host']) ? $parts['host'] : '';
 		$conn->remoteHost = $host;
