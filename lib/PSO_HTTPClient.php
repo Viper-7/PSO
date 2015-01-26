@@ -241,6 +241,7 @@ class PSO_HTTPClient extends PSO_ClientPool {
 		$url = $conn->packURL($parts);
 
 		$context = stream_context_create($conn->contextOptions);
+		$conn->requestStartMicrotime = microtime(true);
 
 		$stream = @fopen($url, 'r', false, $context);
 		

@@ -29,6 +29,10 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 	public $redirectCount = 0;
 	public $connectionDelay = 0;
 	
+	public $requestStartMicrotime;
+	public $requestEndMicrotime;
+	public $requestDuration;
+	
 	public $hasInit = false;
 	public $headersSent = false;
 	
@@ -167,6 +171,9 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		}
 		
 		if(!$this->stream || feof($this->stream)) {
+			$this->requestEndMicrotime = microtime(true);
+			$this->requestDuration = $this->requestEndMicrotime - $this->requestStartMicrotime;
+			
 			$this->responseBody = $this->decompress($this->responseBody);
 			
 			$this->pool->handlePartial($this);
