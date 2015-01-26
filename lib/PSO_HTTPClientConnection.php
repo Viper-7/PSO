@@ -160,6 +160,8 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			unset($this->dom);
 		}
 		
+		$this->pool->handlePartial($this);
+		
 		if(!$this->stream || feof($this->stream)) {
 			$this->responseBody = $this->decompress($this->responseBody);
 			
@@ -167,10 +169,6 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 			$this->pool->handleResponse($this);
 
 			return $this->rawResponse;
-		} else {
-			$this->pool->handlePartial($this);
-			
-			return;
 		}
 	}
 	
