@@ -154,7 +154,7 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 
 			if($this->responseStatusCode > 199 && $this->responseStatusCode < 300) {
 				$this->pool->handleHead($this);
-			} elseif($this->responseStatusCode > 299 && $this->responseStatusCode < 400) {
+			} elseif(($this->responseStatusCode > 299 && $this->responseStatusCode < 400) || isset($this->responseHeaders['Location'])) {
 				return $this->pool->handleRedirect($this);
 			} else {
 				return $this->pool->handleError($this);
