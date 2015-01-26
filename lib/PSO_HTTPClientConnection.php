@@ -70,6 +70,10 @@ class PSO_HTTPClientConnection extends PSO_ClientConnection {
 		return $dom;
 	}
 	
+	public function getXPath() {
+		return new DOMXPath($this->getDOM());
+	}
+	
 	public function setPostVars($data) {
 		if($this->requestBody) {
 			trigger_error('Cannot send post vars in a request that already has a body!');
